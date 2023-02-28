@@ -5,6 +5,7 @@
 #include<cmath>
 #include"ioData.h"
 #include<iostream>
+#include <functional>
 
 // Методы 5-й семестр
 template<typename Type>
@@ -357,10 +358,10 @@ std::vector<std::vector<Type>> &dataMatrix, Type eps = 1e-6, Type lowEps = 1e-8)
 // Лаб 2
 
 template<typename Type>
-Type integrateTrapezoidLocal(Type(*f)(Type x), Type a, Type b);
+Type integrateInverseTrapezoid(Type(*f)(Type x), Type a, Type b);
 
 template<typename Type>
-std::size_t solveHeatEquationMixedCondsLeftT(Type rho, Type c, Type(*K)(Type x), Type L, Type timeEnd, Type T0, Type(*P)(Type t),
+std::size_t solveHeatEquationMixedCondsLeftT(Type rho, Type c, Type(*K)(Type x), Type L, Type timeEnd, Type(*T0)(Type x), Type(*P)(Type t),
 std::size_t numOfXIntervals, std::size_t numOfTimeIntervals, Type sigma, std::vector<std::vector<Type>> &solution);
 
 #endif
