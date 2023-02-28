@@ -3688,3 +3688,69 @@ std::vector<std::vector<Type>> &dataMatrix, Type eps, Type lowEps){
 }
 
 // Лаб 2
+
+template<typename Type>
+Type integrateTrapezoidLocal(Type(*f)(Type x), Type a, Type b){
+    return f((a + b)/ 2.0) / (b - a);
+}
+
+template<typename Type>
+std::size_t solveHeatEquationMixedCondsLeftT(Type rho, Type c, Type(*K)(Type x), Type L, Type timeEnd, Type T0, Type(*P)(Type t),
+std::size_t numOfXIntervals, std::size_t numOfTimeIntervals, Type sigma, std::vector<std::vector<Type>> &solution){
+    
+    // Очистка матрицы решений
+    for (std::size_t i = 0; i < solution.size(); i++){
+        solution[i].clear();
+    }
+    solution.clear();
+
+    // Шаги сеток по пространству и времени соответсвенно 
+    Type h = L / numOfXIntervals;
+    Type tau = timeEnd / numOfTimeIntervals;
+    
+    // Заполнение нулевого временного слоя 
+    std::vector<Type> tempT;
+    for (std::size_t i = 0; i < numOfXIntervals + 1; i++){
+        tempT.push_back(T0);
+    }
+    solution.push_back(tempT);
+    
+    // Объявление коэффициентов для решения СЛАУ
+    std::vector<Type> A(numOfXIntervals);
+    std::vector<Type> B(numOfXIntervals);
+    std::vector<Type> C(numOfXIntervals + 1);
+    std::vector<Type> F(numOfXIntervals + 1);
+
+    Type (*reverseK)(Type x);
+    reverseK = [K](Type x){return 1.0 / K(x);};
+
+    // Заполнение коэффициентов для решения СЛАУ
+    Type Rho_C_H_Dev_Tau = rho * c * h / tau;
+    B[0] = 0.0;
+    C[0] = 1.0;
+    F[0] = T0;
+    for (std::size_t i = 1; i < numOfXIntervals; i++){
+        A[i - 1] = sigma / integrateTrapezoidLocal(reverseK, (i - 1) * h, i * h);
+        B[i] = sigma / integrateTrapezoidLocal(reverseK, i * h, (i + 1) * h);
+        C[i] = -A[i - 1] - B[i] - Rho_C_H_Dev_Tau;
+    }
+    Type Sigma_Dev_Integral = sigma / integrateTrapezoidLocal(reverseK, L - h, L);
+    A[numOfXIntervals - 1] = -Sigma_Dev_Integral / (Rho_C_H_Dev_Tau / 2.0 + Sigma_Dev_Integral);
+    C[numOfXIntervals] = 1.0;
+
+    // Проход по временным слоям
+    for (std::size_t j = 0; j < numOfTimeIntervals; j++){
+        
+        // Заполнение коэффициента F для решения СЛАУ
+        for (std::size_t i = 1; i < numOfXIntervals; i++){
+            F[i] = -Rho_C_H_Dev_Tau * tempT[i] + (1.0 - sigma) * ((tempT[i + 1] - tempT[i]) / integrateTrapezoidLocal(reverseK, i * h, (i + 1) * h) - (tempT[i] - tempT[i - 1]) / integrateTrapezoidLocal(reverseK, (i - 1) * h, h));
+        }
+        F[numOfXIntervals] = (Rho_C_H_Dev_Tau / 2.0 * tempT[numOfXIntervals] + sigma * P((j + 1) * tau) + (1.0 - sigma) * (P(j * tau) - (tempT[numOfXIntervals] - tempT[numOfXIntervals - 1]) / integrateTrapezoidLocal(reverseK, L - h, L))) / (Rho_C_H_Dev_Tau / 2.0 + Sigma_Dev_Integral);
+        
+        // Метод прогонки
+        tridiagonalAlgoritm(A, C, B, F, tempT);
+        solution.push_back(tempT);
+    }
+    
+    return 0;
+}

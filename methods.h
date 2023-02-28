@@ -354,4 +354,13 @@ template<typename Type>
 std::size_t RungeKuttaMethodStepAnalys4(std::vector<Type>(*f)(Type t, const std::vector<Type> &U), Type t0, Type T, const std::vector<Type> &U0, std::size_t numOfTimeInterv,
 std::vector<std::vector<Type>> &dataMatrix, Type eps = 1e-6, Type lowEps = 1e-8);
 
+// Лаб 2
+
+template<typename Type>
+Type integrateTrapezoidLocal(Type(*f)(Type x), Type a, Type b);
+
+template<typename Type>
+std::size_t solveHeatEquationMixedCondsLeftT(Type rho, Type c, Type(*K)(Type x), Type L, Type timeEnd, Type T0, Type(*P)(Type t),
+std::size_t numOfXIntervals, std::size_t numOfTimeIntervals, Type sigma, std::vector<std::vector<Type>> &solution);
+
 #endif
