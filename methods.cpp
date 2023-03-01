@@ -2885,6 +2885,8 @@ std::vector<std::vector<Type>> &solution, bool autoStep, Type eps, Type lowEps){
     }
     std::vector<Type> nextY(n); // Следующий y
     std::vector<Type> halfY(n); // y при уменьшении шага в 2 раза
+    std::vector<Type> halfY2(n);
+
     Type tempT = t0;
     Type nextT = tempT + tau;
     while(tempT < T){
@@ -2903,32 +2905,42 @@ std::vector<std::vector<Type>> &solution, bool autoStep, Type eps, Type lowEps){
         // Уменьшенный шаг
         if (autoStep){
             Type diffYNorm = 0.0;
-            Type halfT = tempT;
+            nextT = tempT;
             Type halfTau = tau / 2.0;
             std::size_t numOfChanges = 1;
             do{
-                halfY = tempY;
-                for (std::size_t m = 0; m < std::pow(2.0, numOfChanges); m++){
-                    for (std::size_t i = 0; i < n; i++){
-                        k1[i] = f(halfT, halfY)[i];
-                    }
-                    for (std::size_t i = 0; i < n; i++){
-                        for (std::size_t j = 0; j < n; j++){
-                            shiftY[j] = halfY[j] + (halfTau / 2.0) * k1[j];
-                        }
-                        k2[i] = f(halfT + halfTau / 2.0, shiftY)[i];
-                    }
-                    halfY = halfY + halfTau * k2;
-                    halfT += halfTau;                
+                // 1 - ая итерация
+                for (std::size_t i = 0; i < n; i++){
+                    k1[i] = f(nextT, tempY)[i];
                 }
+                for (std::size_t i = 0; i < n; i++){
+                    for (std::size_t j = 0; j < n; j++){
+                        shiftY[j] = tempY[j] + (halfTau / 2.0) * k1[j];
+                    }
+                    k2[i] = f(nextT + halfTau / 2.0, shiftY)[i];
+                }
+                halfY2 = tempY + halfTau * k2;
+                // 2-ая итерация
+                for (std::size_t i = 0; i < n; i++){
+                    k1[i] = f(nextT, halfY2)[i];
+                }
+                for (std::size_t i = 0; i < n; i++){
+                    for (std::size_t j = 0; j < n; j++){
+                        shiftY[j] = halfY2[j] + (halfTau / 2.0) * k1[j];
+                    }
+                    k2[i] = f(nextT + halfTau / 2.0, shiftY)[i];
+                }
+                halfY = halfY2 + halfTau * k2;
+                nextT += halfTau;   
                 diffYNorm = normOfVector(nextY - halfY) / 3.0;
-                nextY = halfY;
                 if (diffYNorm < eps){
+                    nextY = halfY;
                     break;
                 }
                 tau /= 2.0;
                 halfTau /= 2.0;
-                halfT = tempT;
+                nextY = halfY2;
+                nextT = tempT;
                 numOfChanges++;
             } while (true);
             if (diffYNorm < lowEps){
@@ -2975,6 +2987,7 @@ std::vector<std::vector<Type>> &solution, bool autoStep, Type eps, Type lowEps){
     }
     std::vector<Type> nextY(n); // Следующий y
     std::vector<Type> halfY(n); // y при уменьшении шага в 2 раза
+    std::vector<Type> halfY2(n);
     Type tempT = t0;
     Type nextT = tempT + tau;
     while(tempT < T){
@@ -3005,45 +3018,67 @@ std::vector<std::vector<Type>> &solution, bool autoStep, Type eps, Type lowEps){
         // Уменьшенный шаг
         if (autoStep){
             Type diffYNorm = 0.0;
-            Type halfT = tempT;
+            Type nextT = tempT;
             Type halfTau = tau / 2.0;
-            std::size_t numOfChanges = 1;
-            do{
-                halfY = tempY;
-                for (std::size_t m = 0; m < std::pow(2.0, numOfChanges); m++){
-                    for (std::size_t i = 0; i < n; i++){
-                        k1[i] = f(halfT, halfY)[i];
-                    }
-                    for (std::size_t i = 0; i < n; i++){
-                        for (std::size_t j = 0; j < n; j++){
-                            shiftY[j] = halfY[j] + (halfTau / 2.0) * k1[j];
-                        }
-                        k2[i] = f(halfT + halfTau / 2.0, shiftY)[i];
-                    }
-                    for (std::size_t i = 0; i < n; i++){
-                        for (std::size_t j = 0; j < n; j++){
-                            shiftY[j] = halfY[j] + (halfTau / 2.0) * k2[j];
-                        }
-                        k3[i] = f(halfT + halfTau / 2.0, shiftY)[i];
-                    }
-                    for (std::size_t i = 0; i < n; i++){
-                        for (std::size_t j = 0; j < n; j++){
-                            shiftY[j] = halfY[j] + halfTau * k3[j];
-                        }
-                        k4[i] = f(halfT + halfTau, shiftY)[i];
-                    }
-                    halfY = halfY + (halfTau / 6.0) * (k1 + 2.0 * k2 + 2.0 * k3 + k4);
-                    halfT += halfTau;
+            do{ 
+                // Первая итерация 
+                for (std::size_t i = 0; i < n; i++){
+                    k1[i] = f(nextT, tempY)[i];
                 }
+                for (std::size_t i = 0; i < n; i++){
+                    for (std::size_t j = 0; j < n; j++){
+                        shiftY[j] = tempY[j] + (halfTau / 2.0) * k1[j];
+                    }
+                    k2[i] = f(nextT + halfTau / 2.0, shiftY)[i];
+                }
+                for (std::size_t i = 0; i < n; i++){
+                    for (std::size_t j = 0; j < n; j++){
+                        shiftY[j] = tempY[j] + (halfTau / 2.0) * k2[j];
+                    }
+                    k3[i] = f(nextT + halfTau / 2.0, shiftY)[i];
+                }
+                for (std::size_t i = 0; i < n; i++){
+                    for (std::size_t j = 0; j < n; j++){
+                        shiftY[j] = tempY[j] + halfTau * k3[j];
+                    }
+                    k4[i] = f(nextT + halfTau, shiftY)[i];
+                }
+                halfY2 = tempY + (halfTau / 6.0) * (k1 + 2.0 * k2 + 2.0 * k3 + k4);
+                nextT += halfTau;
+                // Вторая итерация
+                for (std::size_t i = 0; i < n; i++){
+                    k1[i] = f(nextT, halfY2)[i];
+                }
+                for (std::size_t i = 0; i < n; i++){
+                    for (std::size_t j = 0; j < n; j++){
+                        shiftY[j] = halfY2[j] + (halfTau / 2.0) * k1[j];
+                    }
+                    k2[i] = f(nextT + halfTau / 2.0, shiftY)[i];
+                }
+                for (std::size_t i = 0; i < n; i++){
+                    for (std::size_t j = 0; j < n; j++){
+                        shiftY[j] = halfY2[j] + (halfTau / 2.0) * k2[j];
+                    }
+                    k3[i] = f(nextT + halfTau / 2.0, shiftY)[i];
+                }
+                for (std::size_t i = 0; i < n; i++){
+                    for (std::size_t j = 0; j < n; j++){
+                        shiftY[j] = halfY2[j] + halfTau * k3[j];
+                    }
+                    k4[i] = f(nextT + halfTau, shiftY)[i];
+                }
+                halfY = halfY2 + (halfTau / 6.0) * (k1 + 2.0 * k2 + 2.0 * k3 + k4);
+                nextT += halfTau;
 
                 diffYNorm = normOfVector(nextY - halfY) / 15.0;
-                nextY = halfY;
                 if (diffYNorm < eps){
+                    nextY = halfY;
                     break;
                 }
                 tau /= 2.0;
                 halfTau /= 2.0;
-                halfT = tempT;
+                nextY = halfY2;
+                nextT = tempT;
                 numOfChanges++;
             } while (true);
             if (diffYNorm < lowEps){
@@ -3490,6 +3525,7 @@ std::vector<std::vector<Type>> &dataMatrix, Type eps, Type lowEps){
     }
     std::vector<Type> nextY(n); // Следующий y
     std::vector<Type> halfY(n); // y при уменьшении шага в 2 раза
+    std::vector<Type> halfY2(n);
     Type tempT = t0;
     Type nextT = tempT + tau;
     while(tempT < T){
@@ -3511,32 +3547,44 @@ std::vector<std::vector<Type>> &dataMatrix, Type eps, Type lowEps){
     
         // Уменьшенный шаг
         Type diffYNorm = 0.0;
-        Type halfT = tempT;
+        nextT = tempT;
         Type halfTau = tau / 2.0;
         std::size_t numOfChanges = 1;
         do{
-            halfY = tempY;
-            for (std::size_t m = 0; m < std::pow(2.0, numOfChanges); m++){
-                for (std::size_t i = 0; i < n; i++){
-                    k1[i] = f(halfT, halfY)[i];
-                }
-                for (std::size_t i = 0; i < n; i++){
-                    for (std::size_t j = 0; j < n; j++){
-                        shiftY[j] = halfY[j] + (halfTau / 2.0) * k1[j];
-                    }
-                    k2[i] = f(halfT + halfTau / 2.0, shiftY)[i];
-                }
-                halfY = halfY + halfTau * k2;
-                halfT += halfTau;                
+            // 1 - ая итерация
+            for (std::size_t i = 0; i < n; i++){
+                k1[i] = f(nextT, tempY)[i];
             }
+            for (std::size_t i = 0; i < n; i++){
+                for (std::size_t j = 0; j < n; j++){
+                    shiftY[j] = tempY[j] + (halfTau / 2.0) * k1[j];
+                }
+                k2[i] = f(nextT + halfTau / 2.0, shiftY)[i];
+            }
+            halfY2 = tempY + halfTau * k2;
+            nextT += halfTau;
+            // 2-ая итерация
+            for (std::size_t i = 0; i < n; i++){
+                k1[i] = f(nextT, halfY2)[i];
+            }
+            for (std::size_t i = 0; i < n; i++){
+                for (std::size_t j = 0; j < n; j++){
+                    shiftY[j] = halfY2[j] + (halfTau / 2.0) * k1[j];
+                }
+                k2[i] = f(nextT + halfTau / 2.0, shiftY)[i];
+            }
+            halfY = halfY2 + halfTau * k2;
+            nextT += halfTau;
+
             diffYNorm = normOfVector(nextY - halfY) / 3.0;
-            nextY = halfY;
             if (diffYNorm < eps){
+                nextY = halfY;
                 break;
             }
             tau /= 2.0;
             halfTau /= 2.0;
-            halfT = tempT;
+            nextY = halfY2;
+            nextT = tempT;
             numOfReduce++;
             numOfChanges++;
         } while (true);
@@ -3552,7 +3600,6 @@ std::vector<std::vector<Type>> &dataMatrix, Type eps, Type lowEps){
         
         tempY = nextY;
         tempT = nextT;
-        nextT = tempT + tau;
     }
     dataMatrix.push_back(tGrid);
     dataMatrix.push_back(tauVec);
@@ -3593,6 +3640,7 @@ std::vector<std::vector<Type>> &dataMatrix, Type eps, Type lowEps){
     }
     std::vector<Type> nextY(n); // Следующий y
     std::vector<Type> halfY(n); // y при уменьшении шага в 2 раза
+    std::vector<Type> halfY2(n);
     Type tempT = t0;
     Type nextT = tempT + tau;
     while(tempT < T){
@@ -3626,36 +3674,58 @@ std::vector<std::vector<Type>> &dataMatrix, Type eps, Type lowEps){
     
         // Уменьшенный шаг
         Type diffYNorm = 0.0;
-        Type halfT = tempT;
+        Type nextT = tempT;
         Type halfTau = tau / 2.0;
         std::size_t numOfChanges = 1;
         do{
-            halfY = tempY;
-            for (std::size_t m = 0; m < std::pow(2.0, numOfChanges); m++){
-                for (std::size_t i = 0; i < n; i++){
-                    k1[i] = f(halfT, halfY)[i];
-                }
-                for (std::size_t i = 0; i < n; i++){
-                    for (std::size_t j = 0; j < n; j++){
-                        shiftY[j] = halfY[j] + (halfTau / 2.0) * k1[j];
-                    }
-                    k2[i] = f(halfT + halfTau / 2.0, shiftY)[i];
-                }
-                for (std::size_t i = 0; i < n; i++){
-                    for (std::size_t j = 0; j < n; j++){
-                        shiftY[j] = halfY[j] + (halfTau / 2.0) * k2[j];
-                    }
-                    k3[i] = f(halfT + halfTau / 2.0, shiftY)[i];
-                }
-                for (std::size_t i = 0; i < n; i++){
-                    for (std::size_t j = 0; j < n; j++){
-                        shiftY[j] = halfY[j] + halfTau * k3[j];
-                    }
-                    k4[i] = f(halfT + halfTau, shiftY)[i];
-                }
-                halfY = halfY + (halfTau / 6.0) * (k1 + 2.0 * k2 + 2.0 * k3 + k4);
-                halfT += halfTau;
+            // Первая итерация 
+            for (std::size_t i = 0; i < n; i++){
+                k1[i] = f(nextT, tempY)[i];
             }
+            for (std::size_t i = 0; i < n; i++){
+                for (std::size_t j = 0; j < n; j++){
+                    shiftY[j] = tempY[j] + (halfTau / 2.0) * k1[j];
+                }
+                k2[i] = f(nextT + halfTau / 2.0, shiftY)[i];
+            }
+            for (std::size_t i = 0; i < n; i++){
+                for (std::size_t j = 0; j < n; j++){
+                    shiftY[j] = tempY[j] + (halfTau / 2.0) * k2[j];
+                }
+                k3[i] = f(nextT + halfTau / 2.0, shiftY)[i];
+            }
+            for (std::size_t i = 0; i < n; i++){
+                for (std::size_t j = 0; j < n; j++){
+                    shiftY[j] = tempY[j] + halfTau * k3[j];
+                }
+                k4[i] = f(nextT + halfTau, shiftY)[i];
+            }
+            halfY2 = tempY + (halfTau / 6.0) * (k1 + 2.0 * k2 + 2.0 * k3 + k4);
+            nextT += halfTau;
+            // Вторая итерация
+            for (std::size_t i = 0; i < n; i++){
+                k1[i] = f(nextT, halfY2)[i];
+            }
+            for (std::size_t i = 0; i < n; i++){
+                for (std::size_t j = 0; j < n; j++){
+                    shiftY[j] = halfY2[j] + (halfTau / 2.0) * k1[j];
+                }
+                k2[i] = f(nextT + halfTau / 2.0, shiftY)[i];
+            }
+            for (std::size_t i = 0; i < n; i++){
+                for (std::size_t j = 0; j < n; j++){
+                    shiftY[j] = halfY2[j] + (halfTau / 2.0) * k2[j];
+                }
+                k3[i] = f(nextT + halfTau / 2.0, shiftY)[i];
+            }
+            for (std::size_t i = 0; i < n; i++){
+                for (std::size_t j = 0; j < n; j++){
+                    shiftY[j] = halfY2[j] + halfTau * k3[j];
+                }
+                k4[i] = f(nextT + halfTau, shiftY)[i];
+            }
+            halfY = halfY2 + (halfTau / 6.0) * (k1 + 2.0 * k2 + 2.0 * k3 + k4);
+            nextT += halfTau;
 
             diffYNorm = normOfVector(nextY - halfY) / 15.0;
             nextY = halfY;
@@ -3664,7 +3734,7 @@ std::vector<std::vector<Type>> &dataMatrix, Type eps, Type lowEps){
             }
             tau /= 2.0;
             halfTau /= 2.0;
-            halfT = tempT;
+            nextT = tempT;
             numOfReduce++;
             numOfChanges++;
         } while (true);
