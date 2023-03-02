@@ -166,23 +166,42 @@ SOLUTION_FLAG tridiagonalAlgoritm(const std::vector<Type> &diag, std::vector<Typ
     if (lDiag.size() != dim - 1 || uDiag.size() != dim - 1 || rVec.size() != dim){
         return NO_SOLUTION;
     }
-    lDiag.insert(lDiag.begin(), 1, 0.0);
-    uDiag.push_back(0.0);
     solution.resize(dim);
     std::vector<Type> alpha = {-uDiag[0] / diag[0]};
     std::vector<Type> beta = {rVec[0] / diag[0]};
     for (std::size_t i = 1; i < dim - 1; i++){
-        Type c = diag[i] + lDiag[i] * alpha[i - 1];
+        Type c = diag[i] + lDiag[i - 1] * alpha[i - 1];
         alpha.push_back(-uDiag[i] / c); 
-        beta.push_back((rVec[i] - lDiag[i] * beta[i - 1]) / c);
+        beta.push_back((rVec[i] - lDiag[i - 1] * beta[i - 1]) / c);
     }
-    beta.push_back((rVec[dim - 1] - lDiag[dim - 1] * beta[dim - 2]) / (diag[dim - 1] + lDiag[dim - 1] * alpha[dim - 2]));
-    solution[dim - 1] = beta[dim - 1];
+    solution[dim - 1] = (rVec[dim - 1] - lDiag[dim - 2] * beta[dim - 2]) / (diag[dim - 1] + lDiag[dim - 2] * alpha[dim - 2]);
     for (int i = dim - 2; i >= 0; i--){
         solution[i] = alpha[i] * solution[i + 1] + beta[i];
     }
-    lDiag.erase(lDiag.begin(), lDiag.begin() + 1);
-    uDiag.pop_back();
+    return HAS_SOLUTION;
+}
+
+template<typename Type>
+SOLUTION_FLAG subTridiagonalAlgoritm(const std::vector<Type> &diag, std::vector<Type> &lDiag, std::vector<Type> &uDiag, const std::vector<Type> &rVec, 
+std::vector<Type> &solution, std::size_t startIndex){
+    std::size_t dim = diag.size();
+    if (lDiag.size() != dim - 1 || uDiag.size() != dim - 1 || rVec.size() != dim){
+        return NO_SOLUTION;
+    }
+    if (dim + startIndex > solution.size()){
+        solution.resize(dim + startIndex);
+    }
+    std::vector<Type> alpha = {-uDiag[0] / diag[0]};
+    std::vector<Type> beta = {rVec[0] / diag[0]};
+    for (std::size_t i = 1; i < dim - 1; i++){
+        Type c = diag[i] + lDiag[i - 1] * alpha[i - 1];
+        alpha.push_back(-uDiag[i] / c); 
+        beta.push_back((rVec[i] - lDiag[i - 1] * beta[i - 1]) / c);
+    }
+    solution[startIndex + dim - 1] = (rVec[dim - 1] - lDiag[dim - 2] * beta[dim - 2]) / (diag[dim - 1] + lDiag[dim - 2] * alpha[dim - 2]);
+    for (int i = dim - 2; i >= 0; i--){
+        solution[startIndex + i] = alpha[i] * solution[startIndex + i + 1] + beta[i];
+    }
     return HAS_SOLUTION;
 }
 

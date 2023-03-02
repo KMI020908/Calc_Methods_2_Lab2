@@ -45,6 +45,23 @@ void temp_main(){
 }
 
 int main(){
-    temp_main<double>();
+    //temp_main<double>();
+    std::vector<double> solution(6);
+    std::vector<double> A = {7.0, 8.0, 9.0, 15.0, 11.0};
+    std::vector<double> B = {1.0, 12.0, -11.0, 2.0, -23.0, 2.0};
+    std::vector<double> C = {2.0, 1.0, 5.0, 8.0, -1.0};
+    std::vector<double> F = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0};
+    subTridiagonalAlgoritm(B, A, C, F, solution);
+    std::cout << solution << '\n';
+    tridiagonalAlgoritm(B, A, C, F, solution);
+    std::cout << solution << '\n';
+    
+    std::vector<double> A2 = {9.0, 15.0};
+    std::vector<double> B2 = {-11.0, 2.0, -23.0};
+    std::vector<double> C2 = {5.0, 8.0};
+    std::vector<double> F2 = {3.0, 4.0, 5.0};
+    subTridiagonalAlgoritm(B2, A2, C2, F2, solution, 2);
+    std::cout << solution << '\n';
+
     return 0;
 }
