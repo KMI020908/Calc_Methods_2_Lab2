@@ -3782,8 +3782,8 @@ std::vector<std::vector<Type>> &dataMatrix, Type eps, Type lowEps){
 // Лаб 2
 
 template<typename Type>
-FILE_FLAG solveHeatEquationFirstConds(Type rho, Type c, Type(*K)(Type x), Type L, Type timeEnd, Type(*T0)(Type x),
-std::size_t numOfXIntervals, std::size_t numOfTimeIntervals, Type sigma, const std::string &solutionFile){
+FILE_FLAG solveHeatEquation(const std::string &solutionFile, Type rho, Type c, Type(*K)(Type x), Type L, Type timeEnd,
+std::size_t numOfXIntervals, std::size_t numOfTimeIntervals, Type sigma, CONDS_FLAG flag, Type(*T0)(Type x), Type(*q1)(Type t), Type(*q2)(Type t)){
 
     // Шаги сеток по пространству и времени соответсвенно 
     Type h = L / numOfXIntervals;
@@ -3816,84 +3816,27 @@ std::size_t numOfXIntervals, std::size_t numOfTimeIntervals, Type sigma, const s
     Type Rho_C_H_Dev_Tau = rho * c * h / tau;
 
     C[0] = 1.0;
-    B[0] = 0.0;
-    for (std::size_t i = 1; i < numOfXIntervals; i++){
-        A[i - 1] = sigma / h * K((i - 0.5) * h);
-        B[i] = sigma / h * K((i + 0.5) * h);
-        C[i] = -A[i - 1] - B[i] - Rho_C_H_Dev_Tau;
-    }
-    A[numOfXIntervals - 1] = 0.0;
-    C[numOfXIntervals] = 1.0;
-
-    // Проход по временным слоям
-    for (std::size_t j = 0; j < numOfTimeIntervals; j++){
-        
-        // Заполнение коэффициента F для решения СЛАУ
-        if (flag == LT_RQ){
-            F[0] = T0(0.0);
-            F[numOfXIntervals] = (Rho_C_H_Dev_Tau / 2.0 * tempT[numOfXIntervals] + sigma * q((j + 1) * tau) + (1.0 - sigma) * (q(j * tau) - K((numOfXIntervals - 0.5) * h) * (tempT[numOfXIntervals] - tempT[numOfXIntervals - 1]) / h)) / (Rho_C_H_Dev_Tau / 2.0 + sigma / h * K((numOfXIntervals - 0.5) * h));
-        }
-        else{
-            F[0] = (Rho_C_H_Dev_Tau / 2.0 * tempT[0] + sigma * q((j + 1) * tau) + (1.0 - sigma) * (q(j * tau) + K(0.5 * h) * (tempT[1] - tempT[0]) / h)) / (Rho_C_H_Dev_Tau / 2.0 + sigma / h * K(0.5 * h));
-            F[numOfXIntervals] = T0(numOfXIntervals * h);
-        }
-        for (std::size_t i = 1; i < numOfXIntervals; i++){
-            F[i] = -Rho_C_H_Dev_Tau * tempT[i] - (1.0 - sigma) * (K((i + 0.5) * h) * (tempT[i + 1] - tempT[i]) / h - K((i - 0.5) * h) * (tempT[i] - tempT[i - 1]) / h);
-        }
-
-        // Метод прогонки
-        tridiagonalAlgoritm(C, A, B, F, tempT);
-        for (std::size_t i = 0; i < numOfXIntervals + 1; i++){
-            file << tempT[i] << '\t';
-        }
-        file << '\n'; 
-    }
-    file.close();
-    return IS_CLOSED;
-}
-
-template<typename Type>
-FILE_FLAG solveHeatEquationMixedConds(Type rho, Type c, Type(*K)(Type x), Type L, Type timeEnd, Type(*T0)(Type x), MIXED_CONDS_FLAG flag, Type(*q)(Type t),
-std::size_t numOfXIntervals, std::size_t numOfTimeIntervals, Type sigma, const std::string &solutionFile){
-
-    // Шаги сеток по пространству и времени соответсвенно 
-    Type h = L / numOfXIntervals;
-    Type tau = timeEnd / numOfTimeIntervals;
-    
-    // Заполнение нулевого временного слоя 
-    std::vector<Type> tempT;
-    for (std::size_t i = 0; i < numOfXIntervals + 1; i++){
-        tempT.push_back(T0(i * h));
-    }
-    
-    // Создание файла для вывода данных
-    std::ofstream file;
-    file.open(solutionFile);
-    if (!file.is_open()){
-        return NOT_OPEN;
-    }
-    for (std::size_t i = 0; i < numOfXIntervals + 1; i++){
-        file << tempT[i] << '\t';
-    }
-    file << '\n';
-    
-    // Объявление коэффициентов для решения СЛАУ
-    std::vector<Type> A(numOfXIntervals);
-    std::vector<Type> B(numOfXIntervals);
-    std::vector<Type> C(numOfXIntervals + 1);
-    std::vector<Type> F(numOfXIntervals + 1);
-
-    // Заполнение коэффициентов для решения СЛАУ
-    Type Rho_C_H_Dev_Tau = rho * c * h / tau;
-
-    C[0] = 1.0;
-    if (flag == LT_RQ){
-        B[0] = 0.0;
-        A[numOfXIntervals - 1] = - (sigma / h * K((numOfXIntervals - 0.5) * h)) / (Rho_C_H_Dev_Tau  / 2.0 + sigma / h * K((numOfXIntervals - 0.5) * h));
-    }
-    else{
-        B[0] = -(sigma / h * K(0.5 * h)) / (Rho_C_H_Dev_Tau / 2.0 + sigma / h * K(0.5 * h));
-        A[numOfXIntervals - 1] = 0.0;
+    switch (flag){
+        case LT_RT:
+            B[0] = 0.0;
+            A[numOfXIntervals - 1] = 0.0;
+            break;
+        case LT_RQ:
+            B[0] = 0.0;
+            A[numOfXIntervals - 1] = - (sigma / h * K((numOfXIntervals - 0.5) * h)) / (Rho_C_H_Dev_Tau  / 2.0 + sigma / h * K((numOfXIntervals - 0.5) * h));
+            break;
+        case LQ_RT:
+            B[0] = -(sigma / h * K(0.5 * h)) / (Rho_C_H_Dev_Tau / 2.0 + sigma / h * K(0.5 * h));
+            A[numOfXIntervals - 1] = 0.0;
+            break;
+        case LQ_RQ:
+            B[0] = -(sigma / h * K(0.5 * h)) / (Rho_C_H_Dev_Tau / 2.0 + sigma / h * K(0.5 * h));
+            A[numOfXIntervals - 1] = - (sigma / h * K((numOfXIntervals - 0.5) * h)) / (Rho_C_H_Dev_Tau  / 2.0 + sigma / h * K((numOfXIntervals - 0.5) * h));
+            break;
+        default:
+            B[0] = 0.0;
+            A[numOfXIntervals - 1] = 0.0;
+            break;
     }
     for (std::size_t i = 1; i < numOfXIntervals; i++){
         A[i - 1] = sigma / h * K((i - 0.5) * h);
@@ -3902,29 +3845,81 @@ std::size_t numOfXIntervals, std::size_t numOfTimeIntervals, Type sigma, const s
     }
     C[numOfXIntervals] = 1.0;
 
-    // Проход по временным слоям
-    for (std::size_t j = 0; j < numOfTimeIntervals; j++){
-        
-        // Заполнение коэффициента F для решения СЛАУ
-        if (flag == LT_RQ){
+    // Проход по временным слоям в зависимости от краевых условий
+    switch (flag){
+        case LT_RT:
             F[0] = T0(0.0);
-            F[numOfXIntervals] = (Rho_C_H_Dev_Tau / 2.0 * tempT[numOfXIntervals] + sigma * q((j + 1) * tau) + (1.0 - sigma) * (q(j * tau) - K((numOfXIntervals - 0.5) * h) * (tempT[numOfXIntervals] - tempT[numOfXIntervals - 1]) / h)) / (Rho_C_H_Dev_Tau / 2.0 + sigma / h * K((numOfXIntervals - 0.5) * h));
-        }
-        else{
-            F[0] = (Rho_C_H_Dev_Tau / 2.0 * tempT[0] + sigma * q((j + 1) * tau) + (1.0 - sigma) * (q(j * tau) + K(0.5 * h) * (tempT[1] - tempT[0]) / h)) / (Rho_C_H_Dev_Tau / 2.0 + sigma / h * K(0.5 * h));
             F[numOfXIntervals] = T0(numOfXIntervals * h);
-        }
-        for (std::size_t i = 1; i < numOfXIntervals; i++){
-            F[i] = -Rho_C_H_Dev_Tau * tempT[i] - (1.0 - sigma) * (K((i + 0.5) * h) * (tempT[i + 1] - tempT[i]) / h - K((i - 0.5) * h) * (tempT[i] - tempT[i - 1]) / h);
-        }
-
-        // Метод прогонки
-        tridiagonalAlgoritm(C, A, B, F, tempT);
-        for (std::size_t i = 0; i < numOfXIntervals + 1; i++){
-            file << tempT[i] << '\t';
-        }
-        file << '\n'; 
+            for (std::size_t j = 0; j < numOfTimeIntervals; j++){
+                for (std::size_t i = 1; i < numOfXIntervals; i++){
+                    F[i] = -Rho_C_H_Dev_Tau * tempT[i] - (1.0 - sigma) * (K((i + 0.5) * h) * (tempT[i + 1] - tempT[i]) / h - K((i - 0.5) * h) * (tempT[i] - tempT[i - 1]) / h);
+                }
+                tridiagonalAlgoritm(C, A, B, F, tempT);
+                for (std::size_t i = 0; i < numOfXIntervals + 1; i++){
+                    file << tempT[i] << '\t';
+                }
+                file << '\n';
+            }
+            break;
+        case LT_RQ:
+            F[0] = T0(0.0);
+            for (std::size_t j = 0; j < numOfTimeIntervals; j++){
+                F[numOfXIntervals] = (Rho_C_H_Dev_Tau / 2.0 * tempT[numOfXIntervals] + sigma * q1((j + 1) * tau) + (1.0 - sigma) * (q1(j * tau) - K((numOfXIntervals - 0.5) * h) * (tempT[numOfXIntervals] - tempT[numOfXIntervals - 1]) / h)) / (Rho_C_H_Dev_Tau / 2.0 + sigma / h * K((numOfXIntervals - 0.5) * h));
+                for (std::size_t i = 1; i < numOfXIntervals; i++){
+                    F[i] = -Rho_C_H_Dev_Tau * tempT[i] - (1.0 - sigma) * (K((i + 0.5) * h) * (tempT[i + 1] - tempT[i]) / h - K((i - 0.5) * h) * (tempT[i] - tempT[i - 1]) / h);
+                }
+                tridiagonalAlgoritm(C, A, B, F, tempT);
+                for (std::size_t i = 0; i < numOfXIntervals + 1; i++){
+                    file << tempT[i] << '\t';
+                }
+                file << '\n';
+            }
+            break;
+        case LQ_RT:
+            F[numOfXIntervals] = T0(numOfXIntervals * h);
+            for (std::size_t j = 0; j < numOfTimeIntervals; j++){
+                F[0] = (Rho_C_H_Dev_Tau / 2.0 * tempT[0] + sigma * q1((j + 1) * tau) + (1.0 - sigma) * (q1(j * tau) + K(0.5 * h) * (tempT[1] - tempT[0]) / h)) / (Rho_C_H_Dev_Tau / 2.0 + sigma / h * K(0.5 * h));
+                for (std::size_t i = 1; i < numOfXIntervals; i++){
+                    F[i] = -Rho_C_H_Dev_Tau * tempT[i] - (1.0 - sigma) * (K((i + 0.5) * h) * (tempT[i + 1] - tempT[i]) / h - K((i - 0.5) * h) * (tempT[i] - tempT[i - 1]) / h);
+                }
+                tridiagonalAlgoritm(C, A, B, F, tempT);
+                for (std::size_t i = 0; i < numOfXIntervals + 1; i++){
+                    file << tempT[i] << '\t';
+                }
+                file << '\n';
+            }
+            break;
+        case LQ_RQ:
+            for (std::size_t j = 0; j < numOfTimeIntervals; j++){
+                F[0] = (Rho_C_H_Dev_Tau / 2.0 * tempT[0] + sigma * q1((j + 1) * tau) + (1.0 - sigma) * (q1(j * tau) + K(0.5 * h) * (tempT[1] - tempT[0]) / h)) / (Rho_C_H_Dev_Tau / 2.0 + sigma / h * K(0.5 * h));
+                F[numOfXIntervals] = (Rho_C_H_Dev_Tau / 2.0 * tempT[numOfXIntervals] + sigma * q2((j + 1) * tau) + (1.0 - sigma) * (q2(j * tau) - K((numOfXIntervals - 0.5) * h) * (tempT[numOfXIntervals] - tempT[numOfXIntervals - 1]) / h)) / (Rho_C_H_Dev_Tau / 2.0 + sigma / h * K((numOfXIntervals - 0.5) * h));
+                for (std::size_t i = 1; i < numOfXIntervals; i++){
+                    F[i] = -Rho_C_H_Dev_Tau * tempT[i] - (1.0 - sigma) * (K((i + 0.5) * h) * (tempT[i + 1] - tempT[i]) / h - K((i - 0.5) * h) * (tempT[i] - tempT[i - 1]) / h);
+                }
+                tridiagonalAlgoritm(C, A, B, F, tempT);
+                for (std::size_t i = 0; i < numOfXIntervals + 1; i++){
+                    file << tempT[i] << '\t';
+                }
+                file << '\n';
+            }
+            break;
+        default:
+            F[0] = T0(0.0);
+            F[numOfXIntervals] = T0(numOfXIntervals * h);
+            for (std::size_t j = 0; j < numOfTimeIntervals; j++){
+                for (std::size_t i = 1; i < numOfXIntervals; i++){
+                    F[i] = -Rho_C_H_Dev_Tau * tempT[i] - (1.0 - sigma) * (K((i + 0.5) * h) * (tempT[i + 1] - tempT[i]) / h - K((i - 0.5) * h) * (tempT[i] - tempT[i - 1]) / h);
+                }
+                tridiagonalAlgoritm(C, A, B, F, tempT);
+                for (std::size_t i = 0; i < numOfXIntervals + 1; i++){
+                    file << tempT[i] << '\t';
+                }
+                file << '\n';
+            }
+            break;
     }
+    
+    // Закрываем файл решения
     file.close();
     return IS_CLOSED;
 }

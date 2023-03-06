@@ -360,8 +360,12 @@ std::size_t RungeKuttaMethodStepAnalys4(std::vector<Type>(*f)(Type t, const std:
 std::vector<std::vector<Type>> &dataMatrix, Type eps = 1e-6, Type lowEps = 1e-8);
 
 // Лаб 2
+template<typename Type>
+Type zeroFunction(Type x){
+    return 0.0;
+}
 
 template<typename Type>
-FILE_FLAG solveHeatEquationMixedConds(Type rho, Type c, Type(*K)(Type x), Type L, Type timeEnd, Type(*T0)(Type x), MIXED_CONDS_FLAG flag, Type(*q)(Type t),
-std::size_t numOfXIntervals, std::size_t numOfTimeIntervals, Type sigma, const std::string &solutionFile);
+FILE_FLAG solveHeatEquation(const std::string &solutionFile, Type rho, Type c, Type(*K)(Type x), Type L, Type timeEnd,
+std::size_t numOfXIntervals, std::size_t numOfTimeIntervals, Type sigma = 0.5, CONDS_FLAG flag = LT_RT, Type(*T0)(Type x) = zeroFunction, Type(*q1)(Type t) = zeroFunction, Type(*q2)(Type t) = zeroFunction);
 #endif

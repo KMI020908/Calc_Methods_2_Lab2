@@ -6,50 +6,89 @@
 #include"testFuncs.h"
 #include<algorithm>
 
-// T_left && Q_right
+// Процедура для заполнения названий файла
 template<typename Type>
-void getHeatEquationMixedCondsLeftT(Type rho, Type c, Type(*K)(Type x), Type L, Type timeEnd, Type(*T0)(Type x), MIXED_CONDS_FLAG flag, Type(*q)(Type t),
-std::size_t numOfXIntervals, std::size_t numOfTimeIntervals, Type sigma, 
-const std::string &SOLUTION_FILE, const std::string &DATA_FILE, const std::string &INTERVAL_FILE){ 
-    std::vector<Type> dataVec = {rho, c, L, timeEnd, sigma};
+void getFileNames(std::size_t numOfEq, CONDS_FLAG flag, Type sigma, std::string &SOLUTION_FILE, std::string &DATA_FILE, std::string &INTERVAL_FILE){
+    SOLUTION_FILE = getFileNameHeatEq(numOfEq, flag, sigma, "solution");
+    DATA_FILE = getFileNameHeatEq(numOfEq, flag, sigma, "data");
+    INTERVAL_FILE = getFileNameHeatEq(numOfEq, flag, sigma, "interval");
+}
+
+// Решенние уравнений при разных sigma
+template<typename Type>
+void getHeatEquationSolutionFirstConds(std::size_t numOfEq, Type rho, Type c, Type(*K)(Type x), Type L, Type timeEnd,
+std::size_t numOfXIntervals, std::size_t numOfTimeIntervals, Type anotherSigma, CONDS_FLAG flag, Type(*T0)(Type x) = zeroFunction, Type(*q1)(Type t) = zeroFunction, Type(*q2)(Type t) = zeroFunction){ 
     std::vector<std::size_t> numOfIntervalsVec = {numOfXIntervals, numOfTimeIntervals};
-    solveHeatEquationMixedConds(rho, c , K, L, timeEnd, T0, flag, q, numOfXIntervals, numOfTimeIntervals, sigma, SOLUTION_FILE);
+    std::string SOLUTION_FILE;
+    std::string DATA_FILE;
+    std::string INTERVAL_FILE;
+    Type sigma;
+    std::vector<Type> dataVec = {rho, c, L, timeEnd, sigma};
+
+    sigma = 0.0;
+    dataVec[4] = sigma;
+    getFileNames(numOfEq, flag, sigma, SOLUTION_FILE, DATA_FILE, INTERVAL_FILE);
+    solveHeatEquation(SOLUTION_FILE, rho, c, K, L, timeEnd, numOfXIntervals, numOfTimeIntervals, sigma, flag, T0, q1, q2);
+    writeVectorFile(dataVec, DATA_FILE);
+    writeVectorFile(numOfIntervalsVec, INTERVAL_FILE);
+
+    sigma = 1.0;
+    dataVec[4] = sigma;
+    getFileNames(numOfEq, flag, sigma, SOLUTION_FILE, DATA_FILE, INTERVAL_FILE);
+    solveHeatEquation(SOLUTION_FILE, rho, c, K, L, timeEnd, numOfXIntervals, numOfTimeIntervals, sigma, flag, T0, q1, q2);
+    writeVectorFile(dataVec, DATA_FILE);
+    writeVectorFile(numOfIntervalsVec, INTERVAL_FILE);
+
+    sigma = 0.5;
+    dataVec[4] = sigma;
+    getFileNames(numOfEq, flag, sigma, SOLUTION_FILE, DATA_FILE, INTERVAL_FILE);
+    solveHeatEquation(SOLUTION_FILE, rho, c, K, L, timeEnd, numOfXIntervals, numOfTimeIntervals, sigma, flag, T0, q1, q2);
+    writeVectorFile(dataVec, DATA_FILE);
+    writeVectorFile(numOfIntervalsVec, INTERVAL_FILE);
+
+    sigma = anotherSigma;
+    dataVec[4] = sigma;
+    getFileNames(numOfEq, flag, sigma, SOLUTION_FILE, DATA_FILE, INTERVAL_FILE);
+    solveHeatEquation(SOLUTION_FILE, rho, c, K, L, timeEnd, numOfXIntervals, numOfTimeIntervals, sigma, flag, T0, q1, q2);
     writeVectorFile(dataVec, DATA_FILE);
     writeVectorFile(numOfIntervalsVec, INTERVAL_FILE);
 }
 
+
+
 template<typename Type>
 void temp_main(){
-    Type rho, c, L, timeEnd, sigma;
+    std::size_t numOfEq;
+    Type rho, c, L, timeEnd;
     std::size_t numOfXIntervals, numOfTimeIntervals;
-    MIXED_CONDS_FLAG flag;
+    CONDS_FLAG flag;
+    Type anotherSigma;
+    Type (*T0)(Type x) = nullptr;
+    Type (*q1)(Type t) = nullptr;
+    Type (*q2)(Type t) = nullptr;
+    Type (*K)(Type x) = nullptr;
     
     // Первое уравнение
+    numOfEq = 1;
     rho = 1.0;
     c = 1.0;
     L = 1.0;
+    anotherSigma = 0.75;
+    K = K1;
+    T0 = T01;
+    q1 = q1_1;
+    q2 = q2_1;
     timeEnd = 10.0;
     numOfXIntervals = 10;
     numOfTimeIntervals = 100;
-
+    flag = LT_RT;
+    getHeatEquationSolutionFirstConds(numOfEq, rho, c, K, L, timeEnd, numOfXIntervals, numOfTimeIntervals, anotherSigma, flag, T0);
     flag = LT_RQ;
-    sigma = 0.0;
-    getHeatEquationMixedCondsLeftT(rho, c , K1, L, timeEnd, T01, flag, P1, numOfXIntervals, numOfTimeIntervals, sigma, MIX_LEFT_FW_SOLUTION_FILE_1, MIX_LEFT_FW_DATA_FILE_1, MIX_LEFT_FW_INTERVAL_FILE_1);
-    sigma = 0.5;
-    getHeatEquationMixedCondsLeftT(rho, c , K1, L, timeEnd, T01, flag, P1, numOfXIntervals, numOfTimeIntervals, sigma, MIX_LEFT_SYM_SOLUTION_FILE_1, MIX_LEFT_SYM_DATA_FILE_1, MIX_LEFT_SYM_INTERVAL_FILE_1);
-    sigma = 1.0;
-    getHeatEquationMixedCondsLeftT(rho, c , K1, L, timeEnd, T01, flag, P1, numOfXIntervals, numOfTimeIntervals, sigma, MIX_LEFT_BW_SOLUTION_FILE_1, MIX_LEFT_BW_DATA_FILE_1, MIX_LEFT_BW_INTERVAL_FILE_1);
-    sigma = 0.52;
-    getHeatEquationMixedCondsLeftT(rho, c , K1, L, timeEnd, T01, flag, P1, numOfXIntervals, numOfTimeIntervals, sigma, MIX_LEFT_AN_SOLUTION_FILE_1, MIX_LEFT_AN_DATA_FILE_1, MIX_LEFT_AN_INTERVAL_FILE_1);
-    flag = RT_LQ;
-    sigma = 0.0;
-    getHeatEquationMixedCondsLeftT(rho, c , K1, L, timeEnd, T01, flag, P1, numOfXIntervals, numOfTimeIntervals, sigma, MIX_LEFT_FW_SOLUTION_FILE_1, MIX_LEFT_FW_DATA_FILE_1, MIX_LEFT_FW_INTERVAL_FILE_1);
-    sigma = 0.5;
-    getHeatEquationMixedCondsLeftT(rho, c , K1, L, timeEnd, T01, flag, P1, numOfXIntervals, numOfTimeIntervals, sigma, MIX_LEFT_SYM_SOLUTION_FILE_1, MIX_LEFT_SYM_DATA_FILE_1, MIX_LEFT_SYM_INTERVAL_FILE_1);
-    sigma = 1.0;
-    getHeatEquationMixedCondsLeftT(rho, c , K1, L, timeEnd, T01, flag, P1, numOfXIntervals, numOfTimeIntervals, sigma, MIX_LEFT_BW_SOLUTION_FILE_1, MIX_LEFT_BW_DATA_FILE_1, MIX_LEFT_BW_INTERVAL_FILE_1);
-    sigma = 0.52;
-    getHeatEquationMixedCondsLeftT(rho, c , K1, L, timeEnd, T01, flag, P1, numOfXIntervals, numOfTimeIntervals, sigma, MIX_LEFT_AN_SOLUTION_FILE_1, MIX_LEFT_AN_DATA_FILE_1, MIX_LEFT_AN_INTERVAL_FILE_1);
+    getHeatEquationSolutionFirstConds(numOfEq, rho, c, K, L, timeEnd, numOfXIntervals, numOfTimeIntervals, anotherSigma, flag, T0, q1);
+    flag = LQ_RT;
+    getHeatEquationSolutionFirstConds(numOfEq, rho, c, K, L, timeEnd, numOfXIntervals, numOfTimeIntervals, anotherSigma, flag, T0, q2);
+    flag = LQ_RQ;
+    getHeatEquationSolutionFirstConds(numOfEq, rho, c, K, L, timeEnd, numOfXIntervals, numOfTimeIntervals, anotherSigma, flag, T0, q1, q2);
 }
 
 int main(){

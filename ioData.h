@@ -98,4 +98,7 @@ FILE_FLAG writeSysResNewthon(const std::vector<Type> &sol, Type x0, Type y0, Typ
 
 FILE_FLAG writeIters(std::size_t exactIterations, const std::string& OUT_FILE_PATH);
 
+template<typename Type>
+std::string getFileNameHeatEq(std::size_t numOfEq, CONDS_FLAG flag, Type sigma, const std::string &name = "solution");
+
 #endif

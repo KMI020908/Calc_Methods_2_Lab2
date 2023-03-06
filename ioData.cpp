@@ -654,3 +654,45 @@ FILE_FLAG writeIters(std::size_t exactIterations, const std::string& OUT_FILE_PA
 	file.close();
 	return IS_CLOSED;
 }
+
+template<typename Type>
+std::string getFileNameHeatEq(std::size_t numOfEq, CONDS_FLAG flag, Type sigma, const std::string &name){
+    std::string condsFolder;
+    switch (flag){
+        case LT_RT:
+            condsFolder = "FirstConds\\";
+            break;
+        case LT_RQ:
+            condsFolder = "MixedCondsLeftT\\";
+            break;
+        case LQ_RT:
+            condsFolder = "MixedCondsRightT\\";
+            break;
+        case LQ_RQ:
+            condsFolder = "SecondConds\\";
+            break;
+        
+        default:
+            condsFolder = "FirstConds\\";
+            break;
+    }
+    std::string sigmaFolder;
+    if (sigma == 0.0){
+        sigmaFolder = "Forward\\";
+    }
+    else{
+        if (sigma == 1.0){
+           sigmaFolder = "Backward\\"; 
+        }
+        else{
+            if (sigma == 0.5){
+                sigmaFolder = "Symmetric\\";  
+            }
+            else{
+                sigmaFolder = "Another\\";
+            }
+        }
+    }
+    return "D:\\Calc_Methods_2\\Lab2\\" + condsFolder + sigmaFolder + name + std::to_string(numOfEq) + ".txt";
+
+}

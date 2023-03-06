@@ -14,7 +14,11 @@ Type T01(Type x){
     return 1.0 + x * (1.0 - x);
 }
 template<typename Type>
-Type P1(Type t){
+Type q1_1(Type t){
+    return t + 1;
+}
+template<typename Type>
+Type q2_1(Type t){
     return t + 1;
 }
 
