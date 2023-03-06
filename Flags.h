@@ -57,4 +57,9 @@ enum DIFF_METHOD_FLAG{
     PREDICT_CORRECT // 6
 };
 
+enum MIXED_CONDS_FLAG{
+    LT_RQ,  // 0 - Температура на левом конце, а поток на правом
+    RT_LQ   // 1 - Поток на левом конце, а температура на правом
+};
+
 #endif 

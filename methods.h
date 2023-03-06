@@ -362,10 +362,6 @@ std::vector<std::vector<Type>> &dataMatrix, Type eps = 1e-6, Type lowEps = 1e-8)
 // Лаб 2
 
 template<typename Type>
-Type integrateInverseTrapezoid(Type(*f)(Type x), Type a, Type b);
-
-template<typename Type>
-std::size_t solveHeatEquationMixedCondsLeftT(Type rho, Type c, Type(*K)(Type x), Type L, Type timeEnd, Type(*T0)(Type x), Type(*P)(Type t),
-std::size_t numOfXIntervals, std::size_t numOfTimeIntervals, Type sigma, std::vector<std::vector<Type>> &solution);
-
+FILE_FLAG solveHeatEquationMixedConds(Type rho, Type c, Type(*K)(Type x), Type L, Type timeEnd, Type(*T0)(Type x), MIXED_CONDS_FLAG flag, Type(*q)(Type t),
+std::size_t numOfXIntervals, std::size_t numOfTimeIntervals, Type sigma, const std::string &solutionFile);
 #endif
