@@ -1,7 +1,6 @@
 #include<vector>
 #include"methods.cpp"
 #include"ioData.cpp"
-#include"filePath.h"
 #include<iomanip>
 #include"testFuncs.h"
 #include<algorithm>
@@ -68,7 +67,7 @@ void temp_main(){
     Type (*q2)(Type t) = nullptr;
     Type (*K)(Type x) = nullptr;
     
-    // Первое уравнение
+    // Первое уравнение // 1ый вариант
     numOfEq = 1;
     rho = 1.0;
     c = 1.0;
@@ -79,14 +78,36 @@ void temp_main(){
     q1 = q1_1;
     q2 = q2_1;
     timeEnd = 10.0;
-    numOfXIntervals = 10;
-    numOfTimeIntervals = 100;
+    numOfXIntervals = 100;
+    numOfTimeIntervals = 1000;
     flag = LT_RT;
     getHeatEquationSolutionFirstConds(numOfEq, rho, c, K, L, timeEnd, numOfXIntervals, numOfTimeIntervals, anotherSigma, flag, T0);
     flag = LT_RQ;
-    getHeatEquationSolutionFirstConds(numOfEq, rho, c, K, L, timeEnd, numOfXIntervals, numOfTimeIntervals, anotherSigma, flag, T0, q1);
-    flag = LQ_RT;
     getHeatEquationSolutionFirstConds(numOfEq, rho, c, K, L, timeEnd, numOfXIntervals, numOfTimeIntervals, anotherSigma, flag, T0, q2);
+    flag = LQ_RT;
+    getHeatEquationSolutionFirstConds(numOfEq, rho, c, K, L, timeEnd, numOfXIntervals, numOfTimeIntervals, anotherSigma, flag, T0, q1);
+    flag = LQ_RQ;
+    getHeatEquationSolutionFirstConds(numOfEq, rho, c, K, L, timeEnd, numOfXIntervals, numOfTimeIntervals, anotherSigma, flag, T0, q1, q2);
+
+    // Второе уравнение // 9ый вариант
+    numOfEq = 2;
+    rho = 4.0;
+    c = 0.5;
+    L = 1.0;
+    anotherSigma = 0.75;
+    K = K2;
+    T0 = T02;
+    q1 = q1_2;
+    q2 = q2_2;
+    timeEnd = 10.0;
+    numOfXIntervals = 100;
+    numOfTimeIntervals = 1000;
+    flag = LT_RT;
+    getHeatEquationSolutionFirstConds(numOfEq, rho, c, K, L, timeEnd, numOfXIntervals, numOfTimeIntervals, anotherSigma, flag, T0);
+    flag = LT_RQ;
+    getHeatEquationSolutionFirstConds(numOfEq, rho, c, K, L, timeEnd, numOfXIntervals, numOfTimeIntervals, anotherSigma, flag, T0, q2);
+    flag = LQ_RT;
+    getHeatEquationSolutionFirstConds(numOfEq, rho, c, K, L, timeEnd, numOfXIntervals, numOfTimeIntervals, anotherSigma, flag, T0, q1);
     flag = LQ_RQ;
     getHeatEquationSolutionFirstConds(numOfEq, rho, c, K, L, timeEnd, numOfXIntervals, numOfTimeIntervals, anotherSigma, flag, T0, q1, q2);
 }
