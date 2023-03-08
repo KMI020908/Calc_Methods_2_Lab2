@@ -368,4 +368,9 @@ Type zeroFunction(Type x){
 template<typename Type>
 FILE_FLAG solveHeatEquation(const std::string &solutionFile, Type rho, Type c, Type(*K)(Type x), Type L, Type timeEnd,
 std::size_t numOfXIntervals, std::size_t numOfTimeIntervals, Type sigma = 0.5, CONDS_FLAG flag = LT_RT, Type(*T0)(Type x) = zeroFunction, Type(*q1)(Type t) = zeroFunction, Type(*q2)(Type t) = zeroFunction);
+
+template<typename Type>
+FILE_FLAG solveHeatQuasilinearEquation(const std::string &solutionFile, Type rho, Type c, Type alpha, Type beta, Type gamma, Type L, Type timeEnd,
+std::size_t numOfXIntervals, std::size_t numOfTimeIntervals, CONDS_FLAG flag = LT_RT, Type(*T0)(Type x) = zeroFunction, Type(*q1)(Type t) = zeroFunction, Type(*q2)(Type t) = zeroFunction, std::size_t numOfIters = 4);
+
 #endif

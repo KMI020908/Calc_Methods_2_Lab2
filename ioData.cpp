@@ -693,6 +693,28 @@ std::string getFileNameHeatEq(std::size_t numOfEq, CONDS_FLAG flag, Type sigma, 
             }
         }
     }
-    return "D:\\Calc_Methods_2\\Lab2\\" + condsFolder + sigmaFolder + name + std::to_string(numOfEq) + ".txt";
+    return "D:\\Calc_Methods_2\\Lab2\\LinearHeatEq\\" + condsFolder + sigmaFolder + name + std::to_string(numOfEq) + ".txt";
+}
 
+std::string getFileNameQuasiHeatEq(std::size_t numOfEq, CONDS_FLAG flag, const std::string &name){
+    std::string condsFolder;
+    switch (flag){
+        case LT_RT:
+            condsFolder = "FirstConds\\";
+            break;
+        case LT_RQ:
+            condsFolder = "MixedCondsLeftT\\";
+            break;
+        case LQ_RT:
+            condsFolder = "MixedCondsRightT\\";
+            break;
+        case LQ_RQ:
+            condsFolder = "SecondConds\\";
+            break;
+        
+        default:
+            condsFolder = "FirstConds\\";
+            break;
+    }
+    return "D:\\Calc_Methods_2\\Lab2\\QuasilinearHeatEq\\" + condsFolder + name + std::to_string(numOfEq) + ".txt";
 }

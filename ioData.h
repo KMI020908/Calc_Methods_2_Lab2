@@ -101,4 +101,6 @@ FILE_FLAG writeIters(std::size_t exactIterations, const std::string& OUT_FILE_PA
 template<typename Type>
 std::string getFileNameHeatEq(std::size_t numOfEq, CONDS_FLAG flag, Type sigma, const std::string &name = "solution");
 
+std::string getFileNameQuasiHeatEq(std::size_t numOfEq, CONDS_FLAG flag, const std::string &name = "solution");
+
 #endif
