@@ -3934,7 +3934,7 @@ std::size_t numOfXIntervals, std::size_t numOfTimeIntervals, Type sigma, CONDS_F
 
 template<typename Type>
 Type aCoefQuasi(Type U, Type prevU, Type alpha, Type beta, Type gamma){
-    return alpha + 0.5 * beta * (std::pow(U, gamma) - std::pow(prevU, gamma));
+    return alpha + 0.5 * beta * (std::pow(U, gamma) + std::pow(prevU, gamma));
 }
 
 template<typename Type>
