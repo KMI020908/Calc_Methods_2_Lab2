@@ -74,4 +74,22 @@ Type q2_2(Type t){
     return 0.0;
 }
 
+// Функции для третьего теста // Изолированные концы
+template<typename Type>
+Type K3(Type x){
+    return 1.0;
+}
+template<typename Type>
+Type T03(Type x){
+    return x;
+}
+template<typename Type>
+Type q1_3(Type t){
+    return 0.0;
+}
+template<typename Type>
+Type q2_3(Type t){
+    return 0.0;
+}
+
 #endif

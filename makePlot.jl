@@ -1,24 +1,35 @@
 using Plotly
-function makePlot(numOfPlots, plotStep, solutionMatrix, dataVec, intervalVec)
+function makePlot(numOfPlots, plotStep, solutionMatrix, dataVec, intervalVec, isQuasi::Bool = false)
     ρ = dataVec[1]
     c = dataVec[2]
     L = dataVec[3]
     timeEnd = dataVec[4]
-    σ = dataVec[5]
-
+    σ = 0.0
+    α = 0.0
+    β = 0.0
+    γ = 0.0
+    titleText = ""
     numOfXIntervals = Int(intervalVec[1])
     numOfTIntervals = Int(intervalVec[2])
 
     h = L / numOfXIntervals
-    τ = timeEnd / numOfTIntervals
-    
+    τ = timeEnd / numOfTIntervals    
+    if  isQuasi == false
+        σ = dataVec[5]
+        titleText = "ρ = $ρ, c = $c, σ = $σ      x ∈ [0, $L], t ∈ [0, $timeEnd]      h = $h, τ = $τ"
+    else
+        α = dataVec[5]
+        β = dataVec[6]
+        γ = dataVec[7]    
+        titleText = "ρ = $ρ, c = $c, α = $α, β = $β, γ = $γ      x ∈ [0, $L], t ∈ [0, $timeEnd]      h = $h, τ = $τ"
+    end
     
     layout = Layout(
         font_family = "Time New Roman",
         font_color = "black",
         title = attr(
             paper_bgcolor = "red",
-            text = "ρ = $ρ, c = $c, σ = $σ      x ∈ [0, $L], t ∈ [0, $timeEnd]      h = $h, τ = $τ",
+            text = titleText,
             font_family = "Times New Roman",
             font_color = "black",
             font_size = 20,

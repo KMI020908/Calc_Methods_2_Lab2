@@ -76,7 +76,7 @@ template<typename Type>
 void temp_main(){
     std::size_t numOfEq;
     Type rho, c, L, timeEnd, alpha, beta, gamma;
-    std::size_t numOfXIntervals, numOfTimeIntervals, numOfIters;
+    std::size_t numOfXIntervals, numOfTimeIntervals, numOfIters, numOfXIntervalsQuasi, numOfTIntervalsQuasi;
     CONDS_FLAG flag;
     Type anotherSigma;
     Type (*T0)(Type x) = nullptr;
@@ -100,22 +100,24 @@ void temp_main(){
     alpha = 2.0;
     beta = 0.5;
     gamma = 3.0;
+    numOfXIntervalsQuasi = 5;
+    numOfTIntervalsQuasi = 50000;
 
     //flag = LT_RT;
     //getHeatEquationSolution(numOfEq, rho, c, K, L, timeEnd, numOfXIntervals, numOfTimeIntervals, anotherSigma, flag, T0);
-    //getQuasiHeatEquationSolution(numOfEq, rho, c, alpha, beta, gamma, L, timeEnd, numOfXIntervals, numOfTimeIntervals, flag, T0);
+    //getQuasiHeatEquationSolution(numOfEq, rho, c, alpha, beta, gamma, L, timeEnd, numOfXIntervalsQuasi, numOfTIntervalsQuasi, flag, T0);
 
     //flag = LT_RQ;
     //getHeatEquationSolution(numOfEq, rho, c, K, L, timeEnd, numOfXIntervals, numOfTimeIntervals, anotherSigma, flag, T0, q2);
-    //getQuasiHeatEquationSolution(numOfEq, rho, c, alpha, beta, gamma, L, timeEnd, numOfXIntervals, numOfTimeIntervals, flag, T0, q2);
+    //getQuasiHeatEquationSolution(numOfEq, rho, c, alpha, beta, gamma, L, timeEnd, numOfXIntervalsQuasi, numOfTIntervalsQuasi, flag, T0, q2);
 
     flag = LQ_RT;
     getHeatEquationSolution(numOfEq, rho, c, K, L, timeEnd, numOfXIntervals, numOfTimeIntervals, anotherSigma, flag, T0, q1);
-    getQuasiHeatEquationSolution(numOfEq, rho, c, alpha, beta, gamma, L, timeEnd, numOfXIntervals, numOfTimeIntervals, flag, T0, q1);
+    getQuasiHeatEquationSolution(numOfEq, rho, c, alpha, beta, gamma, L, timeEnd, numOfXIntervalsQuasi, numOfTIntervalsQuasi, flag, T0, q1);
 
     //flag = LQ_RQ;
     //getHeatEquationSolution(numOfEq, rho, c, K, L, timeEnd, numOfXIntervals, numOfTimeIntervals, anotherSigma, flag, T0, q1, q2);
-    //getQuasiHeatEquationSolution(numOfEq, rho, c, alpha, beta, gamma, L, timeEnd, numOfXIntervals, numOfTimeIntervals, flag, T0, q1, q2);
+    //getQuasiHeatEquationSolution(numOfEq, rho, c, alpha, beta, gamma, L, timeEnd, numOfXIntervalsQuasi, numOfTIntervalsQuasi, flag, T0, q1, q2);
 
 
     // Второе уравнение // 9ый вариант
@@ -134,22 +136,42 @@ void temp_main(){
     alpha = 0.1;
     beta = 1.0;
     gamma = 3.0;
+    numOfXIntervalsQuasi = 5;
+    numOfTIntervalsQuasi = 50000;
+    
 
     //flag = LT_RT;
     //getHeatEquationSolution(numOfEq, rho, c, K, L, timeEnd, numOfXIntervals, numOfTimeIntervals, anotherSigma, flag, T0);
-    //getQuasiHeatEquationSolution(numOfEq, rho, c, alpha, beta, gamma, L, timeEnd, numOfXIntervals, numOfTimeIntervals, flag, T0);
+    //getQuasiHeatEquationSolution(numOfEq, rho, c, alpha, beta, gamma, L, timeEnd, numOfXIntervalsQuasi, numOfTIntervalsQuasi, flag, T0);
 
     //flag = LT_RQ;
     //getHeatEquationSolution(numOfEq, rho, c, K, L, timeEnd, numOfXIntervals, numOfTimeIntervals, anotherSigma, flag, T0, q2);
-    //getQuasiHeatEquationSolution(numOfEq, rho, c, alpha, beta, gamma, L, timeEnd, numOfXIntervals, numOfTimeIntervals, flag, T0, q2);
+    //getQuasiHeatEquationSolution(numOfEq, rho, c, alpha, beta, gamma, L, timeEnd, numOfXIntervalsQuasi, numOfTIntervalsQuasi, flag, T0, q2);
 
     flag = LQ_RT;
     getHeatEquationSolution(numOfEq, rho, c, K, L, timeEnd, numOfXIntervals, numOfTimeIntervals, anotherSigma, flag, T0, q1);
-    getQuasiHeatEquationSolution(numOfEq, rho, c, alpha, beta, gamma, L, timeEnd, numOfXIntervals, numOfTimeIntervals, flag, T0, q1);
+    getQuasiHeatEquationSolution(numOfEq, rho, c, alpha, beta, gamma, L, timeEnd, numOfXIntervalsQuasi, numOfTimeIntervals, flag, T0, q1);
     
     //flag = LQ_RQ;
     //getHeatEquationSolution(numOfEq, rho, c, K, L, timeEnd, numOfXIntervals, numOfTimeIntervals, anotherSigma, flag, T0, q1, q2);
-    //getQuasiHeatEquationSolution(numOfEq, rho, c, alpha, beta, gamma, L, timeEnd, numOfXIntervals, numOfTimeIntervals, flag, T0, q1, q2);
+    //getQuasiHeatEquationSolution(numOfEq, rho, c, alpha, beta, gamma, L, timeEnd, numOfXIntervalsQuasi, numOfTIntervalsQuasi, flag, T0, q1, q2);
+
+    // Проверка изолированных концов
+    numOfEq = 3;
+    rho = 1.0;
+    c = 1.0;
+    L = 1.0;
+    anotherSigma = 0.75;
+    K = K3;
+    T0 = T03;
+    q1 = q1_3;
+    q2 = q2_3;
+    timeEnd = 10.0;
+    numOfXIntervals = 100;
+    numOfTimeIntervals = 1000;
+    flag = LQ_RQ;
+    getHeatEquationSolution(numOfEq, rho, c, K, L, timeEnd, numOfXIntervals, numOfTimeIntervals, anotherSigma, flag, T0, q1, q2);
+
 }
 
 int main(){
