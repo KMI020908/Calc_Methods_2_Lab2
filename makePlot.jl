@@ -8,6 +8,7 @@ function makePlot(numOfPlots, plotStep, solutionMatrix, dataVec, intervalVec, is
     α = 0.0
     β = 0.0
     γ = 0.0
+    M = 0
     titleText = ""
     numOfXIntervals = Int(intervalVec[1])
     numOfTIntervals = Int(intervalVec[2])
@@ -20,8 +21,9 @@ function makePlot(numOfPlots, plotStep, solutionMatrix, dataVec, intervalVec, is
     else
         α = dataVec[5]
         β = dataVec[6]
-        γ = dataVec[7]    
-        titleText = "ρ = $ρ, c = $c, α = $α, β = $β, γ = $γ      x ∈ [0, $L], t ∈ [0, $timeEnd]      h = $h, τ = $τ"
+        γ = dataVec[7]
+        M = dataVec[8]    
+        titleText = "ρ = $ρ, c = $c, α = $α, β = $β, γ = $γ, M = $M      x ∈ [0, $L], t ∈ [0, $timeEnd]      h = $h, τ = $τ"
     end
     
     layout = Layout(

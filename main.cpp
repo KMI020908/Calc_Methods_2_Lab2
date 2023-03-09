@@ -56,7 +56,7 @@ std::size_t numOfXIntervals, std::size_t numOfTimeIntervals, Type anotherSigma, 
 // Решенние квазилинейных уравнений
 template<typename Type>
 void getQuasiHeatEquationSolution(std::size_t numOfEq, Type rho, Type c, Type alpha, Type beta, Type gamma, Type L, Type timeEnd,
-std::size_t numOfXIntervals, std::size_t numOfTimeIntervals, CONDS_FLAG flag = LT_RT, Type(*T0)(Type x) = zeroFunction, Type(*q1)(Type t) = zeroFunction, Type(*q2)(Type t) = zeroFunction, std::size_t numOfIters = 4){ 
+std::size_t numOfXIntervals, std::size_t numOfTimeIntervals, CONDS_FLAG flag = LT_RT, Type(*T0)(Type x) = zeroFunction, Type(*q1)(Type t) = zeroFunction, Type(*q2)(Type t) = zeroFunction, std::size_t numOfIters = 5){ 
     std::vector<std::size_t> numOfIntervalsVec = {numOfXIntervals, numOfTimeIntervals};
     std::string SOLUTION_FILE;
     std::string DATA_FILE;
@@ -94,13 +94,13 @@ void temp_main(){
     T0 = T01;
     q1 = q1_1;
     q2 = q2_1;
-    timeEnd = 10.0;
+    timeEnd = 5.0;
     numOfXIntervals = 100;
     numOfTimeIntervals = 1000;
     alpha = 2.0;
     beta = 0.5;
     gamma = 3.0;
-    numOfXIntervalsQuasi = 5;
+    numOfXIntervalsQuasi = 20;
     numOfTIntervalsQuasi = 50000;
 
     //flag = LT_RT;
@@ -130,7 +130,7 @@ void temp_main(){
     T0 = T02;
     q1 = q1_2;
     q2 = q2_2;
-    timeEnd = 10.0;
+    timeEnd = 5.0;
     numOfXIntervals = 100;
     numOfTimeIntervals = 1000;
     alpha = 0.1;
@@ -139,7 +139,6 @@ void temp_main(){
     numOfXIntervalsQuasi = 5;
     numOfTIntervalsQuasi = 50000;
     
-
     //flag = LT_RT;
     //getHeatEquationSolution(numOfEq, rho, c, K, L, timeEnd, numOfXIntervals, numOfTimeIntervals, anotherSigma, flag, T0);
     //getQuasiHeatEquationSolution(numOfEq, rho, c, alpha, beta, gamma, L, timeEnd, numOfXIntervalsQuasi, numOfTIntervalsQuasi, flag, T0);

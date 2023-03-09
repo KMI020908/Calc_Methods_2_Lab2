@@ -3782,6 +3782,11 @@ std::vector<std::vector<Type>> &dataMatrix, Type eps, Type lowEps){
 // Лаб 2
 
 template<typename Type>
+Type aCoef(Type(*K)(Type x), Type h, std::size_t i){
+    return K((i - 0.5) * h);
+}
+
+template<typename Type>
 FILE_FLAG solveHeatEquation(const std::string &solutionFile, Type rho, Type c, Type(*K)(Type x), Type L, Type timeEnd,
 std::size_t numOfXIntervals, std::size_t numOfTimeIntervals, Type sigma, CONDS_FLAG flag, Type(*T0)(Type x), Type(*q1)(Type t), Type(*q2)(Type t)){
 
@@ -3816,8 +3821,8 @@ std::size_t numOfXIntervals, std::size_t numOfTimeIntervals, Type sigma, CONDS_F
     Type Rho_C_H_Dev_Tau = rho * c * h / tau;
     C[0] = 1.0;
     for (std::size_t i = 1; i < numOfXIntervals; i++){
-        A[i - 1] = sigma / h * K((i - 0.5) * h);
-        B[i] = sigma / h * K((i + 0.5) * h);
+        A[i - 1] = sigma / h * aCoef(K, h, i);
+        B[i] = sigma / h * aCoef(K, h, i + 1);
         C[i] = -A[i - 1] - B[i] - Rho_C_H_Dev_Tau;
     }
     C[numOfXIntervals] = 1.0;
@@ -3831,7 +3836,7 @@ std::size_t numOfXIntervals, std::size_t numOfTimeIntervals, Type sigma, CONDS_F
             F[numOfXIntervals] = T0(numOfXIntervals * h);
             for (std::size_t j = 0; j < numOfTimeIntervals; j++){
                 for (std::size_t i = 1; i < numOfXIntervals; i++){
-                    F[i] = -Rho_C_H_Dev_Tau * tempT[i] - (1.0 - sigma) * (K((i + 0.5) * h) * (tempT[i + 1] - tempT[i]) / h - K((i - 0.5) * h) * (tempT[i] - tempT[i - 1]) / h);
+                    F[i] = -Rho_C_H_Dev_Tau * tempT[i] - (1.0 - sigma) * (aCoef(K, h, i + 1) * (tempT[i + 1] - tempT[i]) / h - aCoef(K, h, i) * (tempT[i] - tempT[i - 1]) / h);
                 }
                 tridiagonalAlgoritm(C, A, B, F, tempT);
                 for (std::size_t i = 0; i < numOfXIntervals + 1; i++){
@@ -3842,12 +3847,12 @@ std::size_t numOfXIntervals, std::size_t numOfTimeIntervals, Type sigma, CONDS_F
             break;
         case LT_RQ:
             B[0] = 0.0;
-            A[numOfXIntervals - 1] = - (sigma / h * K((numOfXIntervals - 0.5) * h)) / (Rho_C_H_Dev_Tau  / 2.0 + sigma / h * K((numOfXIntervals - 0.5) * h));
+            A[numOfXIntervals - 1] = - (sigma / h * aCoef(K, h, numOfXIntervals)) / (Rho_C_H_Dev_Tau  / 2.0 + sigma / h * aCoef(K, h, numOfXIntervals));
             F[0] = T0(0.0);
             for (std::size_t j = 0; j < numOfTimeIntervals; j++){
-                F[numOfXIntervals] = (Rho_C_H_Dev_Tau / 2.0 * tempT[numOfXIntervals] + sigma * q1((j + 1) * tau) + (1.0 - sigma) * (q1(j * tau) - K((numOfXIntervals - 0.5) * h) * (tempT[numOfXIntervals] - tempT[numOfXIntervals - 1]) / h)) / (Rho_C_H_Dev_Tau / 2.0 + sigma / h * K((numOfXIntervals - 0.5) * h));
+                F[numOfXIntervals] = (Rho_C_H_Dev_Tau / 2.0 * tempT[numOfXIntervals] + sigma * q1((j + 1) * tau) + (1.0 - sigma) * (q1(j * tau) - aCoef(K, h, numOfXIntervals) * (tempT[numOfXIntervals] - tempT[numOfXIntervals - 1]) / h)) / (Rho_C_H_Dev_Tau / 2.0 + sigma / h * aCoef(K, h, numOfXIntervals));
                 for (std::size_t i = 1; i < numOfXIntervals; i++){
-                    F[i] = -Rho_C_H_Dev_Tau * tempT[i] - (1.0 - sigma) * (K((i + 0.5) * h) * (tempT[i + 1] - tempT[i]) / h - K((i - 0.5) * h) * (tempT[i] - tempT[i - 1]) / h);
+                    F[i] = -Rho_C_H_Dev_Tau * tempT[i] - (1.0 - sigma) * (aCoef(K, h, i + 1) * (tempT[i + 1] - tempT[i]) / h - aCoef(K, h, i) * (tempT[i] - tempT[i - 1]) / h);
                 }
                 tridiagonalAlgoritm(C, A, B, F, tempT);
                 for (std::size_t i = 0; i < numOfXIntervals + 1; i++){
@@ -3857,13 +3862,13 @@ std::size_t numOfXIntervals, std::size_t numOfTimeIntervals, Type sigma, CONDS_F
             }
             break;
         case LQ_RT:
-            B[0] = -(sigma / h * K(0.5 * h)) / (Rho_C_H_Dev_Tau / 2.0 + sigma / h * K(0.5 * h));
+            B[0] = -(sigma / h * aCoef(K, h, 1)) / (Rho_C_H_Dev_Tau / 2.0 + sigma / h * aCoef(K, h, 1));
             A[numOfXIntervals - 1] = 0.0;
             F[numOfXIntervals] = T0(numOfXIntervals * h);
             for (std::size_t j = 0; j < numOfTimeIntervals; j++){
-                F[0] = (Rho_C_H_Dev_Tau / 2.0 * tempT[0] + sigma * q1((j + 1) * tau) + (1.0 - sigma) * (q1(j * tau) + K(0.5 * h) * (tempT[1] - tempT[0]) / h)) / (Rho_C_H_Dev_Tau / 2.0 + sigma / h * K(0.5 * h));
+                F[0] = (Rho_C_H_Dev_Tau / 2.0 * tempT[0] + sigma * q1((j + 1) * tau) + (1.0 - sigma) * (q1(j * tau) + aCoef(K, h, 1) * (tempT[1] - tempT[0]) / h)) / (Rho_C_H_Dev_Tau / 2.0 + sigma / h * aCoef(K, h, 1));
                 for (std::size_t i = 1; i < numOfXIntervals; i++){
-                    F[i] = -Rho_C_H_Dev_Tau * tempT[i] - (1.0 - sigma) * (K((i + 0.5) * h) * (tempT[i + 1] - tempT[i]) / h - K((i - 0.5) * h) * (tempT[i] - tempT[i - 1]) / h);
+                    F[i] = -Rho_C_H_Dev_Tau * tempT[i] - (1.0 - sigma) * (aCoef(K, h, i + 1) * (tempT[i + 1] - tempT[i]) / h - aCoef(K, h, i) * (tempT[i] - tempT[i - 1]) / h);
                 }
                 tridiagonalAlgoritm(C, A, B, F, tempT);
                 for (std::size_t i = 0; i < numOfXIntervals + 1; i++){
@@ -3873,13 +3878,13 @@ std::size_t numOfXIntervals, std::size_t numOfTimeIntervals, Type sigma, CONDS_F
             }
             break;
         case LQ_RQ:
-            B[0] = -(sigma / h * K(0.5 * h)) / (Rho_C_H_Dev_Tau / 2.0 + sigma / h * K(0.5 * h));
-            A[numOfXIntervals - 1] = - (sigma / h * K((numOfXIntervals - 0.5) * h)) / (Rho_C_H_Dev_Tau  / 2.0 + sigma / h * K((numOfXIntervals - 0.5) * h));
+            B[0] = -(sigma / h * aCoef(K, h, 1)) / (Rho_C_H_Dev_Tau / 2.0 + sigma / h * aCoef(K, h, 1));
+            A[numOfXIntervals - 1] = - (sigma / h * aCoef(K, h, numOfXIntervals)) / (Rho_C_H_Dev_Tau  / 2.0 + sigma / h * aCoef(K, h, numOfXIntervals));
             for (std::size_t j = 0; j < numOfTimeIntervals; j++){
-                F[0] = (Rho_C_H_Dev_Tau / 2.0 * tempT[0] + sigma * q1((j + 1) * tau) + (1.0 - sigma) * (q1(j * tau) + K(0.5 * h) * (tempT[1] - tempT[0]) / h)) / (Rho_C_H_Dev_Tau / 2.0 + sigma / h * K(0.5 * h));
-                F[numOfXIntervals] = (Rho_C_H_Dev_Tau / 2.0 * tempT[numOfXIntervals] + sigma * q2((j + 1) * tau) + (1.0 - sigma) * (q2(j * tau) - K((numOfXIntervals - 0.5) * h) * (tempT[numOfXIntervals] - tempT[numOfXIntervals - 1]) / h)) / (Rho_C_H_Dev_Tau / 2.0 + sigma / h * K((numOfXIntervals - 0.5) * h));
+                F[0] = (Rho_C_H_Dev_Tau / 2.0 * tempT[0] + sigma * q1((j + 1) * tau) + (1.0 - sigma) * (q1(j * tau) + aCoef(K, h, 1) * (tempT[1] - tempT[0]) / h)) / (Rho_C_H_Dev_Tau / 2.0 + sigma / h * aCoef(K, h, 1));
+                F[numOfXIntervals] = (Rho_C_H_Dev_Tau / 2.0 * tempT[numOfXIntervals] + sigma * q2((j + 1) * tau) + (1.0 - sigma) * (q2(j * tau) - aCoef(K, h, numOfXIntervals) * (tempT[numOfXIntervals] - tempT[numOfXIntervals - 1]) / h)) / (Rho_C_H_Dev_Tau / 2.0 + sigma / h * aCoef(K, h, numOfXIntervals));
                 for (std::size_t i = 1; i < numOfXIntervals; i++){
-                    F[i] = -Rho_C_H_Dev_Tau * tempT[i] - (1.0 - sigma) * (K((i + 0.5) * h) * (tempT[i + 1] - tempT[i]) / h - K((i - 0.5) * h) * (tempT[i] - tempT[i - 1]) / h);
+                    F[i] = -Rho_C_H_Dev_Tau * tempT[i] - (1.0 - sigma) * (aCoef(K, h, i + 1) * (tempT[i + 1] - tempT[i]) / h - aCoef(K, h, i) * (tempT[i] - tempT[i - 1]) / h);
                 }
                 tridiagonalAlgoritm(C, A, B, F, tempT);
                 for (std::size_t i = 0; i < numOfXIntervals + 1; i++){
@@ -3895,7 +3900,7 @@ std::size_t numOfXIntervals, std::size_t numOfTimeIntervals, Type sigma, CONDS_F
             F[numOfXIntervals] = T0(numOfXIntervals * h);
             for (std::size_t j = 0; j < numOfTimeIntervals; j++){
                 for (std::size_t i = 1; i < numOfXIntervals; i++){
-                    F[i] = -Rho_C_H_Dev_Tau * tempT[i] - (1.0 - sigma) * (K((i + 0.5) * h) * (tempT[i + 1] - tempT[i]) / h - K((i - 0.5) * h) * (tempT[i] - tempT[i - 1]) / h);
+                    F[i] = -Rho_C_H_Dev_Tau * tempT[i] - (1.0 - sigma) * (aCoef(K, h, i + 1) * (tempT[i + 1] - tempT[i]) / h - aCoef(K, h, i) * (tempT[i] - tempT[i - 1]) / h);
                 }
                 tridiagonalAlgoritm(C, A, B, F, tempT);
                 for (std::size_t i = 0; i < numOfXIntervals + 1; i++){
@@ -3909,6 +3914,11 @@ std::size_t numOfXIntervals, std::size_t numOfTimeIntervals, Type sigma, CONDS_F
     // Закрываем файл решения
     file.close();
     return IS_CLOSED;
+}
+
+template<typename Type>
+Type aCoefQuasi(Type U, Type prevU, Type alpha, Type beta, Type gamma){
+    return alpha + 0.5 * beta * (std::pow(U, gamma) - std::pow(prevU, gamma));
 }
 
 template<typename Type>
@@ -3967,8 +3977,8 @@ std::size_t numOfXIntervals, std::size_t numOfTimeIntervals, CONDS_FLAG flag, Ty
                 // Итерации квазилинейного уравнения
                 for (std::size_t s = 0; s < numOfIters; s++){
                     for (std::size_t i = 1; i < numOfXIntervals; i++){
-                        A[i - 1] = (alpha + 0.5 * beta * (std::pow(iterT[i], gamma) - std::pow(iterT[i - 1], gamma))) / h;
-                        B[i] = (alpha + 0.5 * beta * (std::pow(iterT[i + 1], gamma) - std::pow(iterT[i], gamma))) / h;
+                        A[i - 1] = aCoefQuasi(iterT[i], iterT[i - 1], alpha, beta, gamma) / h;
+                        B[i] = aCoefQuasi(iterT[i + 1], iterT[i], alpha, beta, gamma) / h;
                         C[i] = -A[i - 1] - B[i] - Rho_C_H_Dev_Tau;
                     }
                     tridiagonalAlgoritm(C, A, B, F, iterT);
@@ -3992,11 +4002,11 @@ std::size_t numOfXIntervals, std::size_t numOfTimeIntervals, CONDS_FLAG flag, Ty
                 }
                 // Итерации квазилинейного уравнения
                 for (std::size_t s = 0; s < numOfIters; s++){
-                    F[numOfXIntervals] = (Rho_C_H_Dev_Tau / 2.0 * tempT[numOfXIntervals] + q1((j + 1) * tau)) / (Rho_C_H_Dev_Tau / 2.0 + (alpha + 0.5 * beta * (std::pow(iterT[numOfXIntervals], gamma) - std::pow(iterT[numOfXIntervals - 1], gamma))) / h);
-                    A[numOfXIntervals - 1] = - ((alpha + 0.5 * beta * (std::pow(iterT[numOfXIntervals], gamma) - std::pow(iterT[numOfXIntervals - 1], gamma))) / h) / (Rho_C_H_Dev_Tau / 2.0 + (alpha + 0.5 * beta * (std::pow(iterT[numOfXIntervals], gamma) - std::pow(iterT[numOfXIntervals - 1], gamma))) / h);
+                    F[numOfXIntervals] = (Rho_C_H_Dev_Tau / 2.0 * tempT[numOfXIntervals] + q1((j + 1) * tau)) / (Rho_C_H_Dev_Tau / 2.0 + aCoefQuasi(iterT[numOfXIntervals], iterT[numOfXIntervals - 1], alpha, beta, gamma) / h);
+                    A[numOfXIntervals - 1] = - (aCoefQuasi(iterT[numOfXIntervals], iterT[numOfXIntervals - 1], alpha, beta, gamma) / h) / (Rho_C_H_Dev_Tau / 2.0 + aCoefQuasi(iterT[numOfXIntervals], iterT[numOfXIntervals - 1], alpha, beta, gamma) / h);
                     for (std::size_t i = 1; i < numOfXIntervals; i++){
-                        A[i - 1] = (alpha + 0.5 * beta * (std::pow(iterT[i], gamma) - std::pow(iterT[i - 1], gamma))) / h;
-                        B[i] = (alpha + 0.5 * beta * (std::pow(iterT[i + 1], gamma) - std::pow(iterT[i], gamma))) / h;
+                        A[i - 1] = aCoefQuasi(iterT[i], iterT[i - 1], alpha, beta, gamma) / h;
+                        B[i] = aCoefQuasi(iterT[i + 1], iterT[i], alpha, beta, gamma) / h;
                         C[i] = -A[i - 1] - B[i] - Rho_C_H_Dev_Tau;
                     }
                     tridiagonalAlgoritm(C, A, B, F, iterT);
@@ -4020,11 +4030,11 @@ std::size_t numOfXIntervals, std::size_t numOfTimeIntervals, CONDS_FLAG flag, Ty
                 }
                 // Итерации квазилинейного уравнения
                 for (std::size_t s = 0; s < numOfIters; s++){
-                    F[0] = (Rho_C_H_Dev_Tau / 2.0 * tempT[0] + q1((j + 1) * tau)) / (Rho_C_H_Dev_Tau / 2.0 + (alpha + 0.5 * beta * (std::pow(iterT[1], gamma) - std::pow(iterT[0], gamma))) / h);
-                    B[0] = - ((alpha + 0.5 * beta * (std::pow(iterT[1], gamma) - std::pow(iterT[0], gamma))) / h) / (Rho_C_H_Dev_Tau / 2.0 + (alpha + 0.5 * beta * (std::pow(iterT[1], gamma) - std::pow(iterT[0], gamma))) / h);
+                    F[0] = (Rho_C_H_Dev_Tau / 2.0 * tempT[0] + q1((j + 1) * tau)) / (Rho_C_H_Dev_Tau / 2.0 + aCoefQuasi(iterT[1], iterT[0], alpha, beta, gamma) / h);
+                    B[0] = - (aCoefQuasi(iterT[1], iterT[0], alpha, beta, gamma) / h) / (Rho_C_H_Dev_Tau / 2.0 + aCoefQuasi(iterT[1], iterT[0], alpha, beta, gamma) / h);
                     for (std::size_t i = 1; i < numOfXIntervals; i++){
-                        A[i - 1] = (alpha + 0.5 * beta * (std::pow(iterT[i], gamma) - std::pow(iterT[i - 1], gamma))) / h;
-                        B[i] = (alpha + 0.5 * beta * (std::pow(iterT[i + 1], gamma) - std::pow(iterT[i], gamma))) / h;
+                        A[i - 1] = aCoefQuasi(iterT[i], iterT[i - 1], alpha, beta, gamma) / h;
+                        B[i] = aCoefQuasi(iterT[i + 1], iterT[i], alpha, beta, gamma) / h;
                         C[i] = -A[i - 1] - B[i] - Rho_C_H_Dev_Tau;
                     }
                     tridiagonalAlgoritm(C, A, B, F, iterT);
@@ -4046,13 +4056,13 @@ std::size_t numOfXIntervals, std::size_t numOfTimeIntervals, CONDS_FLAG flag, Ty
                 }
                 // Итерации квазилинейного уравнения
                 for (std::size_t s = 0; s < numOfIters; s++){
-                    F[0] = (Rho_C_H_Dev_Tau / 2.0 * tempT[0] + q1((j + 1) * tau)) / (Rho_C_H_Dev_Tau / 2.0 + (alpha + 0.5 * beta * (std::pow(iterT[1], gamma) - std::pow(iterT[0], gamma))) / h);
-                    B[0] = - ((alpha + 0.5 * beta * (std::pow(iterT[1], gamma) - std::pow(iterT[0], gamma))) / h) / (Rho_C_H_Dev_Tau / 2.0 + (alpha + 0.5 * beta * (std::pow(iterT[1], gamma) - std::pow(iterT[0], gamma))) / h);
-                    F[numOfXIntervals] = (Rho_C_H_Dev_Tau / 2.0 * tempT[numOfXIntervals] + q2((j + 1) * tau)) / (Rho_C_H_Dev_Tau / 2.0 + (alpha + 0.5 * beta * (std::pow(iterT[numOfXIntervals], gamma) - std::pow(iterT[numOfXIntervals - 1], gamma))) / h);
-                    A[numOfXIntervals - 1] = - ((alpha + 0.5 * beta * (std::pow(iterT[numOfXIntervals], gamma) - std::pow(iterT[numOfXIntervals - 1], gamma))) / h) / (Rho_C_H_Dev_Tau / 2.0 + (alpha + 0.5 * beta * (std::pow(iterT[numOfXIntervals], gamma) - std::pow(iterT[numOfXIntervals - 1], gamma))) / h);
+                    F[0] = (Rho_C_H_Dev_Tau / 2.0 * tempT[0] + q1((j + 1) * tau)) / (Rho_C_H_Dev_Tau / 2.0 + aCoefQuasi(iterT[1], iterT[0], alpha, beta, gamma) / h);
+                    B[0] = - (aCoefQuasi(iterT[1], iterT[0], alpha, beta, gamma) / h) / (Rho_C_H_Dev_Tau / 2.0 + aCoefQuasi(iterT[1], iterT[0], alpha, beta, gamma) / h);
+                    F[numOfXIntervals] = (Rho_C_H_Dev_Tau / 2.0 * tempT[numOfXIntervals] + q1((j + 1) * tau)) / (Rho_C_H_Dev_Tau / 2.0 + aCoefQuasi(iterT[numOfXIntervals], iterT[numOfXIntervals - 1], alpha, beta, gamma) / h);
+                    A[numOfXIntervals - 1] = - (aCoefQuasi(iterT[numOfXIntervals], iterT[numOfXIntervals - 1], alpha, beta, gamma) / h) / (Rho_C_H_Dev_Tau / 2.0 + aCoefQuasi(iterT[numOfXIntervals], iterT[numOfXIntervals - 1], alpha, beta, gamma) / h);
                     for (std::size_t i = 1; i < numOfXIntervals; i++){
-                        A[i - 1] = (alpha + 0.5 * beta * (std::pow(iterT[i], gamma) - std::pow(iterT[i - 1], gamma))) / h;
-                        B[i] = (alpha + 0.5 * beta * (std::pow(iterT[i + 1], gamma) - std::pow(iterT[i], gamma))) / h;
+                        A[i - 1] = aCoefQuasi(iterT[i], iterT[i - 1], alpha, beta, gamma) / h;
+                        B[i] = aCoefQuasi(iterT[i + 1], iterT[i], alpha, beta, gamma) / h;
                         C[i] = -A[i - 1] - B[i] - Rho_C_H_Dev_Tau;
                     }
                     tridiagonalAlgoritm(C, A, B, F, iterT);
@@ -4079,8 +4089,8 @@ std::size_t numOfXIntervals, std::size_t numOfTimeIntervals, CONDS_FLAG flag, Ty
                 // Итерации квазилинейного уравнения
                 for (std::size_t s = 0; s < numOfIters; s++){
                     for (std::size_t i = 1; i < numOfXIntervals; i++){
-                        A[i - 1] = (alpha + 0.5 * beta * (std::pow(iterT[i], gamma) - std::pow(iterT[i - 1], gamma))) / h;
-                        B[i] = (alpha + 0.5 * beta * (std::pow(iterT[i + 1], gamma) - std::pow(iterT[i], gamma))) / h;
+                        A[i - 1] = aCoefQuasi(iterT[i], iterT[i - 1], alpha, beta, gamma) / h;
+                        B[i] = aCoefQuasi(iterT[i + 1], iterT[i], alpha, beta, gamma) / h;
                         C[i] = -A[i - 1] - B[i] - Rho_C_H_Dev_Tau;
                     }
                     tridiagonalAlgoritm(C, A, B, F, iterT);

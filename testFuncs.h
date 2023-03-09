@@ -92,4 +92,22 @@ Type q2_3(Type t){
     return 0.0;
 }
 
+// Функция для проверки квазилинейного уравнения из учебника
+template<typename Type>
+Type T04(Type t){
+    Type sigma = 2.0;
+    Type kappa0 = 0.5;
+    Type c = 5.0;
+    Type u0 = 
+    return std::pow(t, 1.0/ sigma);
+}
+template<typename Type>
+Type q1_4(Type t){
+    return 0.0;
+}
+template<typename Type>
+Type q2_4(Type t){
+    return 0.0;
+}
+
 #endif
