@@ -35,8 +35,8 @@ Type q1_1(Type t){
     return NAN;
 }
 template<typename Type>
-Type q2_1(Type t){
-    return 0.0;
+Type T2_1(Type t){
+    return 0.1;
 }
 
 // Функции для второго теста // 9ый вариант
@@ -70,8 +70,8 @@ Type q1_2(Type t){
     return NAN;
 }
 template<typename Type>
-Type q2_2(Type t){
-    return 0.0;
+Type T2_2(Type t){
+    return 0.3;
 }
 
 // Функции для третьего теста // Изолированные концы
@@ -95,18 +95,18 @@ Type q2_3(Type t){
 // Функция для проверки квазилинейного уравнения из учебника
 template<typename Type>
 Type T04(Type t){
-    Type sigma = 2.0;
-    Type kappa0 = 0.5;
-    Type c = 5.0;
-    Type u0 = 
-    return std::pow(t, 1.0/ sigma);
-}
-template<typename Type>
-Type q1_4(Type t){
     return 0.0;
 }
 template<typename Type>
-Type q2_4(Type t){
+Type T1_4(Type t){
+    Type sigma = 2.0;
+    Type kappa0 = 0.5;
+    Type c = 5.0;
+    Type u0 = std::pow((sigma * c * c) / kappa0, 1.0 / sigma);
+    return u0 * std::pow(t, 1.0/ sigma);
+}
+template<typename Type>
+Type T2_4(Type t){
     return 0.0;
 }
 

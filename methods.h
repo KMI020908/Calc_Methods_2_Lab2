@@ -370,10 +370,10 @@ Type aCoef(Type(*K)(Type x), Type h, std::size_t i);
 
 template<typename Type>
 FILE_FLAG solveHeatEquation(const std::string &solutionFile, Type rho, Type c, Type(*K)(Type x), Type L, Type timeEnd,
-std::size_t numOfXIntervals, std::size_t numOfTimeIntervals, Type sigma = 0.5, CONDS_FLAG flag = LT_RT, Type(*T0)(Type x) = zeroFunction, Type(*q1)(Type t) = zeroFunction, Type(*q2)(Type t) = zeroFunction);
+std::size_t numOfXIntervals, std::size_t numOfTimeIntervals, Type sigma, CONDS_FLAG flag, Type(*T0)(Type x), Type(*bound1)(Type t), Type(*bound2)(Type t));
 
 template<typename Type>
 FILE_FLAG solveHeatQuasilinearEquation(const std::string &solutionFile, Type rho, Type c, Type alpha, Type beta, Type gamma, Type L, Type timeEnd,
-std::size_t numOfXIntervals, std::size_t numOfTimeIntervals, CONDS_FLAG flag = LT_RT, Type(*T0)(Type x) = zeroFunction, Type(*q1)(Type t) = zeroFunction, Type(*q2)(Type t) = zeroFunction, std::size_t numOfIters = 4);
+std::size_t numOfXIntervals, std::size_t numOfTimeIntervals, CONDS_FLAG flag, Type(*T0)(Type x), Type(*bound1)(Type t), Type(*bound2)(Type t), std::size_t numOfIters = 4);
 
 #endif

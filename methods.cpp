@@ -3788,7 +3788,7 @@ Type aCoef(Type(*K)(Type x), Type h, std::size_t i){
 
 template<typename Type>
 FILE_FLAG solveHeatEquation(const std::string &solutionFile, Type rho, Type c, Type(*K)(Type x), Type L, Type timeEnd,
-std::size_t numOfXIntervals, std::size_t numOfTimeIntervals, Type sigma, CONDS_FLAG flag, Type(*T0)(Type x), Type(*q1)(Type t), Type(*q2)(Type t)){
+std::size_t numOfXIntervals, std::size_t numOfTimeIntervals, Type sigma, CONDS_FLAG flag, Type(*T0)(Type x), Type(*bound1)(Type t), Type(*bound2)(Type t)){
 
     // Шаги сеток по пространству и времени соответсвенно 
     Type h = L / numOfXIntervals;
@@ -3830,14 +3830,18 @@ std::size_t numOfXIntervals, std::size_t numOfTimeIntervals, Type sigma, CONDS_F
     // Проход по временным слоям в зависимости от краевых условий
     switch (flag){
         case LT_RT:
+            if (bound1(0.0) != T0(0.0) || bound2(0.0) != T0(numOfXIntervals * h)){
+                file.close();
+                return IS_CLOSED;
+            }
             B[0] = 0.0;
             A[numOfXIntervals - 1] = 0.0;
-            F[0] = T0(0.0);
-            F[numOfXIntervals] = T0(numOfXIntervals * h);
             for (std::size_t j = 0; j < numOfTimeIntervals; j++){
+                F[0] = bound1((j + 1) * tau);
                 for (std::size_t i = 1; i < numOfXIntervals; i++){
                     F[i] = -Rho_C_H_Dev_Tau * tempT[i] - (1.0 - sigma) * (aCoef(K, h, i + 1) * (tempT[i + 1] - tempT[i]) / h - aCoef(K, h, i) * (tempT[i] - tempT[i - 1]) / h);
                 }
+                F[numOfXIntervals] = bound2((j + 1) * tau);
                 tridiagonalAlgoritm(C, A, B, F, tempT);
                 for (std::size_t i = 0; i < numOfXIntervals + 1; i++){
                     file << tempT[i] << '\t';
@@ -3846,14 +3850,18 @@ std::size_t numOfXIntervals, std::size_t numOfTimeIntervals, Type sigma, CONDS_F
             }
             break;
         case LT_RQ:
+            if (bound1(0.0) != T0(0.0)){
+                file.close();
+                return IS_CLOSED;
+            }
             B[0] = 0.0;
             A[numOfXIntervals - 1] = - (sigma / h * aCoef(K, h, numOfXIntervals)) / (Rho_C_H_Dev_Tau  / 2.0 + sigma / h * aCoef(K, h, numOfXIntervals));
-            F[0] = T0(0.0);
             for (std::size_t j = 0; j < numOfTimeIntervals; j++){
-                F[numOfXIntervals] = (Rho_C_H_Dev_Tau / 2.0 * tempT[numOfXIntervals] + sigma * q1((j + 1) * tau) + (1.0 - sigma) * (q1(j * tau) - aCoef(K, h, numOfXIntervals) * (tempT[numOfXIntervals] - tempT[numOfXIntervals - 1]) / h)) / (Rho_C_H_Dev_Tau / 2.0 + sigma / h * aCoef(K, h, numOfXIntervals));
+                F[0] = bound1((j + 1) * tau);
                 for (std::size_t i = 1; i < numOfXIntervals; i++){
                     F[i] = -Rho_C_H_Dev_Tau * tempT[i] - (1.0 - sigma) * (aCoef(K, h, i + 1) * (tempT[i + 1] - tempT[i]) / h - aCoef(K, h, i) * (tempT[i] - tempT[i - 1]) / h);
                 }
+                F[numOfXIntervals] = (Rho_C_H_Dev_Tau / 2.0 * tempT[numOfXIntervals] + sigma * bound1((j + 1) * tau) + (1.0 - sigma) * (bound1(j * tau) - aCoef(K, h, numOfXIntervals) * (tempT[numOfXIntervals] - tempT[numOfXIntervals - 1]) / h)) / (Rho_C_H_Dev_Tau / 2.0 + sigma / h * aCoef(K, h, numOfXIntervals));
                 tridiagonalAlgoritm(C, A, B, F, tempT);
                 for (std::size_t i = 0; i < numOfXIntervals + 1; i++){
                     file << tempT[i] << '\t';
@@ -3862,14 +3870,18 @@ std::size_t numOfXIntervals, std::size_t numOfTimeIntervals, Type sigma, CONDS_F
             }
             break;
         case LQ_RT:
+            if (bound2(0.0) != T0(numOfXIntervals * h)){
+                file.close();
+                return IS_CLOSED;
+            }
             B[0] = -(sigma / h * aCoef(K, h, 1)) / (Rho_C_H_Dev_Tau / 2.0 + sigma / h * aCoef(K, h, 1));
             A[numOfXIntervals - 1] = 0.0;
-            F[numOfXIntervals] = T0(numOfXIntervals * h);
             for (std::size_t j = 0; j < numOfTimeIntervals; j++){
-                F[0] = (Rho_C_H_Dev_Tau / 2.0 * tempT[0] + sigma * q1((j + 1) * tau) + (1.0 - sigma) * (q1(j * tau) + aCoef(K, h, 1) * (tempT[1] - tempT[0]) / h)) / (Rho_C_H_Dev_Tau / 2.0 + sigma / h * aCoef(K, h, 1));
+                F[0] = (Rho_C_H_Dev_Tau / 2.0 * tempT[0] + sigma * bound1((j + 1) * tau) + (1.0 - sigma) * (bound1(j * tau) + aCoef(K, h, 1) * (tempT[1] - tempT[0]) / h)) / (Rho_C_H_Dev_Tau / 2.0 + sigma / h * aCoef(K, h, 1));
                 for (std::size_t i = 1; i < numOfXIntervals; i++){
                     F[i] = -Rho_C_H_Dev_Tau * tempT[i] - (1.0 - sigma) * (aCoef(K, h, i + 1) * (tempT[i + 1] - tempT[i]) / h - aCoef(K, h, i) * (tempT[i] - tempT[i - 1]) / h);
                 }
+                F[numOfXIntervals] = bound2((j + 1) * tau);
                 tridiagonalAlgoritm(C, A, B, F, tempT);
                 for (std::size_t i = 0; i < numOfXIntervals + 1; i++){
                     file << tempT[i] << '\t';
@@ -3881,8 +3893,8 @@ std::size_t numOfXIntervals, std::size_t numOfTimeIntervals, Type sigma, CONDS_F
             B[0] = -(sigma / h * aCoef(K, h, 1)) / (Rho_C_H_Dev_Tau / 2.0 + sigma / h * aCoef(K, h, 1));
             A[numOfXIntervals - 1] = - (sigma / h * aCoef(K, h, numOfXIntervals)) / (Rho_C_H_Dev_Tau  / 2.0 + sigma / h * aCoef(K, h, numOfXIntervals));
             for (std::size_t j = 0; j < numOfTimeIntervals; j++){
-                F[0] = (Rho_C_H_Dev_Tau / 2.0 * tempT[0] + sigma * q1((j + 1) * tau) + (1.0 - sigma) * (q1(j * tau) + aCoef(K, h, 1) * (tempT[1] - tempT[0]) / h)) / (Rho_C_H_Dev_Tau / 2.0 + sigma / h * aCoef(K, h, 1));
-                F[numOfXIntervals] = (Rho_C_H_Dev_Tau / 2.0 * tempT[numOfXIntervals] + sigma * q2((j + 1) * tau) + (1.0 - sigma) * (q2(j * tau) - aCoef(K, h, numOfXIntervals) * (tempT[numOfXIntervals] - tempT[numOfXIntervals - 1]) / h)) / (Rho_C_H_Dev_Tau / 2.0 + sigma / h * aCoef(K, h, numOfXIntervals));
+                F[0] = (Rho_C_H_Dev_Tau / 2.0 * tempT[0] + sigma * bound1((j + 1) * tau) + (1.0 - sigma) * (bound1(j * tau) + aCoef(K, h, 1) * (tempT[1] - tempT[0]) / h)) / (Rho_C_H_Dev_Tau / 2.0 + sigma / h * aCoef(K, h, 1));
+                F[numOfXIntervals] = (Rho_C_H_Dev_Tau / 2.0 * tempT[numOfXIntervals] + sigma * bound2((j + 1) * tau) + (1.0 - sigma) * (bound2(j * tau) - aCoef(K, h, numOfXIntervals) * (tempT[numOfXIntervals] - tempT[numOfXIntervals - 1]) / h)) / (Rho_C_H_Dev_Tau / 2.0 + sigma / h * aCoef(K, h, numOfXIntervals));
                 for (std::size_t i = 1; i < numOfXIntervals; i++){
                     F[i] = -Rho_C_H_Dev_Tau * tempT[i] - (1.0 - sigma) * (aCoef(K, h, i + 1) * (tempT[i + 1] - tempT[i]) / h - aCoef(K, h, i) * (tempT[i] - tempT[i - 1]) / h);
                 }
@@ -3894,11 +3906,15 @@ std::size_t numOfXIntervals, std::size_t numOfTimeIntervals, Type sigma, CONDS_F
             }
             break;
         default:
+            if (bound1(0.0) != T0(0.0) || bound2(0.0) != T0(numOfXIntervals * h)){
+                file.close();
+                return IS_CLOSED;
+            }
             B[0] = 0.0;
             A[numOfXIntervals - 1] = 0.0;
-            F[0] = T0(0.0);
-            F[numOfXIntervals] = T0(numOfXIntervals * h);
             for (std::size_t j = 0; j < numOfTimeIntervals; j++){
+                F[0] = bound1((j + 1) * tau);
+                F[numOfXIntervals] = bound2((j + 1) * tau);
                 for (std::size_t i = 1; i < numOfXIntervals; i++){
                     F[i] = -Rho_C_H_Dev_Tau * tempT[i] - (1.0 - sigma) * (aCoef(K, h, i + 1) * (tempT[i + 1] - tempT[i]) / h - aCoef(K, h, i) * (tempT[i] - tempT[i - 1]) / h);
                 }
@@ -3923,7 +3939,7 @@ Type aCoefQuasi(Type U, Type prevU, Type alpha, Type beta, Type gamma){
 
 template<typename Type>
 FILE_FLAG solveHeatQuasilinearEquation(const std::string &solutionFile, Type rho, Type c, Type alpha, Type beta, Type gamma, Type L, Type timeEnd,
-std::size_t numOfXIntervals, std::size_t numOfTimeIntervals, CONDS_FLAG flag, Type(*T0)(Type x), Type(*q1)(Type t), Type(*q2)(Type t), std::size_t numOfIters){
+std::size_t numOfXIntervals, std::size_t numOfTimeIntervals, CONDS_FLAG flag, Type(*T0)(Type x), Type(*bound1)(Type t), Type(*bound2)(Type t), std::size_t numOfIters){
     
     // Шаги сеток по пространству и времени соответсвенно 
     Type h = L / numOfXIntervals;
@@ -3965,15 +3981,19 @@ std::size_t numOfXIntervals, std::size_t numOfTimeIntervals, CONDS_FLAG flag, Ty
     // Проход по временным слоям в зависимости от краевых условий
     switch (flag){
         case LT_RT:
+            if (bound1(0.0) != T0(0.0) || bound2(0.0) != T0(numOfXIntervals * h)){
+                file.close();
+                return IS_CLOSED;
+            }
             B[0] = 0.0;
             A[numOfXIntervals - 1] = 0.0;
-            F[0] = T0(0.0);
-            F[numOfXIntervals] = T0(numOfXIntervals * h);
             for (std::size_t j = 0; j < numOfTimeIntervals; j++){
                 // Заполнение правой части для уравнения
+                F[0] = bound1((j + 1) * tau);
                 for (std::size_t i = 1; i < numOfXIntervals; i++){
                     F[i] = -Rho_C_H_Dev_Tau * tempT[i];
                 }
+                F[numOfXIntervals] = bound2((j + 1) * tau);
                 // Итерации квазилинейного уравнения
                 for (std::size_t s = 0; s < numOfIters; s++){
                     for (std::size_t i = 1; i < numOfXIntervals; i++){
@@ -3993,16 +4013,20 @@ std::size_t numOfXIntervals, std::size_t numOfTimeIntervals, CONDS_FLAG flag, Ty
             }
             break;
         case LT_RQ:
+            if (bound1(0.0) != T0(0.0)){
+                file.close();
+                return IS_CLOSED;
+            }
             B[0] = 0.0;
-            F[0] = T0(0.0);
             for (std::size_t j = 0; j < numOfTimeIntervals; j++){
                 // Заполнение правой части для уравнения
+                F[0] = bound1((j + 1) * tau);
                 for (std::size_t i = 1; i < numOfXIntervals; i++){
                     F[i] = -Rho_C_H_Dev_Tau * tempT[i];
                 }
                 // Итерации квазилинейного уравнения
                 for (std::size_t s = 0; s < numOfIters; s++){
-                    F[numOfXIntervals] = (Rho_C_H_Dev_Tau / 2.0 * tempT[numOfXIntervals] + q1((j + 1) * tau)) / (Rho_C_H_Dev_Tau / 2.0 + aCoefQuasi(iterT[numOfXIntervals], iterT[numOfXIntervals - 1], alpha, beta, gamma) / h);
+                    F[numOfXIntervals] = (Rho_C_H_Dev_Tau / 2.0 * tempT[numOfXIntervals] + bound2((j + 1) * tau)) / (Rho_C_H_Dev_Tau / 2.0 + aCoefQuasi(iterT[numOfXIntervals], iterT[numOfXIntervals - 1], alpha, beta, gamma) / h);
                     A[numOfXIntervals - 1] = - (aCoefQuasi(iterT[numOfXIntervals], iterT[numOfXIntervals - 1], alpha, beta, gamma) / h) / (Rho_C_H_Dev_Tau / 2.0 + aCoefQuasi(iterT[numOfXIntervals], iterT[numOfXIntervals - 1], alpha, beta, gamma) / h);
                     for (std::size_t i = 1; i < numOfXIntervals; i++){
                         A[i - 1] = aCoefQuasi(iterT[i], iterT[i - 1], alpha, beta, gamma) / h;
@@ -4021,16 +4045,20 @@ std::size_t numOfXIntervals, std::size_t numOfTimeIntervals, CONDS_FLAG flag, Ty
             }
             break;
         case LQ_RT:
+            if (bound2(0.0) != T0(numOfXIntervals * h)){
+                file.close();
+                return IS_CLOSED;
+            }
             A[numOfXIntervals - 1] = 0.0;
-            F[numOfXIntervals] = T0(numOfXIntervals * h);
             for (std::size_t j = 0; j < numOfTimeIntervals; j++){
                 // Заполнение правой части для уравнения
                 for (std::size_t i = 1; i < numOfXIntervals; i++){
                     F[i] = -Rho_C_H_Dev_Tau * tempT[i];
                 }
+                F[numOfXIntervals] = bound2((j + 1) * tau);
                 // Итерации квазилинейного уравнения
                 for (std::size_t s = 0; s < numOfIters; s++){
-                    F[0] = (Rho_C_H_Dev_Tau / 2.0 * tempT[0] + q1((j + 1) * tau)) / (Rho_C_H_Dev_Tau / 2.0 + aCoefQuasi(iterT[1], iterT[0], alpha, beta, gamma) / h);
+                    F[0] = (Rho_C_H_Dev_Tau / 2.0 * tempT[0] + bound1((j + 1) * tau)) / (Rho_C_H_Dev_Tau / 2.0 + aCoefQuasi(iterT[1], iterT[0], alpha, beta, gamma) / h);
                     B[0] = - (aCoefQuasi(iterT[1], iterT[0], alpha, beta, gamma) / h) / (Rho_C_H_Dev_Tau / 2.0 + aCoefQuasi(iterT[1], iterT[0], alpha, beta, gamma) / h);
                     for (std::size_t i = 1; i < numOfXIntervals; i++){
                         A[i - 1] = aCoefQuasi(iterT[i], iterT[i - 1], alpha, beta, gamma) / h;
@@ -4056,9 +4084,9 @@ std::size_t numOfXIntervals, std::size_t numOfTimeIntervals, CONDS_FLAG flag, Ty
                 }
                 // Итерации квазилинейного уравнения
                 for (std::size_t s = 0; s < numOfIters; s++){
-                    F[0] = (Rho_C_H_Dev_Tau / 2.0 * tempT[0] + q1((j + 1) * tau)) / (Rho_C_H_Dev_Tau / 2.0 + aCoefQuasi(iterT[1], iterT[0], alpha, beta, gamma) / h);
+                    F[0] = (Rho_C_H_Dev_Tau / 2.0 * tempT[0] + bound1((j + 1) * tau)) / (Rho_C_H_Dev_Tau / 2.0 + aCoefQuasi(iterT[1], iterT[0], alpha, beta, gamma) / h);
                     B[0] = - (aCoefQuasi(iterT[1], iterT[0], alpha, beta, gamma) / h) / (Rho_C_H_Dev_Tau / 2.0 + aCoefQuasi(iterT[1], iterT[0], alpha, beta, gamma) / h);
-                    F[numOfXIntervals] = (Rho_C_H_Dev_Tau / 2.0 * tempT[numOfXIntervals] + q1((j + 1) * tau)) / (Rho_C_H_Dev_Tau / 2.0 + aCoefQuasi(iterT[numOfXIntervals], iterT[numOfXIntervals - 1], alpha, beta, gamma) / h);
+                    F[numOfXIntervals] = (Rho_C_H_Dev_Tau / 2.0 * tempT[numOfXIntervals] + bound2((j + 1) * tau)) / (Rho_C_H_Dev_Tau / 2.0 + aCoefQuasi(iterT[numOfXIntervals], iterT[numOfXIntervals - 1], alpha, beta, gamma) / h);
                     A[numOfXIntervals - 1] = - (aCoefQuasi(iterT[numOfXIntervals], iterT[numOfXIntervals - 1], alpha, beta, gamma) / h) / (Rho_C_H_Dev_Tau / 2.0 + aCoefQuasi(iterT[numOfXIntervals], iterT[numOfXIntervals - 1], alpha, beta, gamma) / h);
                     for (std::size_t i = 1; i < numOfXIntervals; i++){
                         A[i - 1] = aCoefQuasi(iterT[i], iterT[i - 1], alpha, beta, gamma) / h;
@@ -4077,15 +4105,19 @@ std::size_t numOfXIntervals, std::size_t numOfTimeIntervals, CONDS_FLAG flag, Ty
             }
             break;
         default:
+            if (bound1(0.0) != T0(0.0) || bound2(0.0) != T0(numOfXIntervals * h)){
+                file.close();
+                return IS_CLOSED;
+            }
             B[0] = 0.0;
             A[numOfXIntervals - 1] = 0.0;
-            F[0] = T0(0.0);
-            F[numOfXIntervals] = T0(numOfXIntervals * h);
             for (std::size_t j = 0; j < numOfTimeIntervals; j++){
                 // Заполнение правой части для уравнения
+                F[0] = bound1((j + 1) * tau);
                 for (std::size_t i = 1; i < numOfXIntervals; i++){
                     F[i] = -Rho_C_H_Dev_Tau * tempT[i];
                 }
+                F[numOfXIntervals] = bound2((j + 1) * tau);
                 // Итерации квазилинейного уравнения
                 for (std::size_t s = 0; s < numOfIters; s++){
                     for (std::size_t i = 1; i < numOfXIntervals; i++){

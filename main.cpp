@@ -80,6 +80,8 @@ void temp_main(){
     CONDS_FLAG flag;
     Type anotherSigma;
     Type (*T0)(Type x) = nullptr;
+    Type (*T1)(Type t) = nullptr;
+    Type (*T2)(Type t) = nullptr;
     Type (*q1)(Type t) = nullptr;
     Type (*q2)(Type t) = nullptr;
     Type (*K)(Type x) = nullptr;
@@ -93,7 +95,7 @@ void temp_main(){
     K = K1;
     T0 = T01;
     q1 = q1_1;
-    q2 = q2_1;
+    T2 = T2_1;
     timeEnd = 5.0;
     numOfXIntervals = 100;
     numOfTimeIntervals = 1000;
@@ -103,21 +105,9 @@ void temp_main(){
     numOfXIntervalsQuasi = 20;
     numOfTIntervalsQuasi = 50000;
 
-    //flag = LT_RT;
-    //getHeatEquationSolution(numOfEq, rho, c, K, L, timeEnd, numOfXIntervals, numOfTimeIntervals, anotherSigma, flag, T0);
-    //getQuasiHeatEquationSolution(numOfEq, rho, c, alpha, beta, gamma, L, timeEnd, numOfXIntervalsQuasi, numOfTIntervalsQuasi, flag, T0);
-
-    //flag = LT_RQ;
-    //getHeatEquationSolution(numOfEq, rho, c, K, L, timeEnd, numOfXIntervals, numOfTimeIntervals, anotherSigma, flag, T0, q2);
-    //getQuasiHeatEquationSolution(numOfEq, rho, c, alpha, beta, gamma, L, timeEnd, numOfXIntervalsQuasi, numOfTIntervalsQuasi, flag, T0, q2);
-
     flag = LQ_RT;
-    getHeatEquationSolution(numOfEq, rho, c, K, L, timeEnd, numOfXIntervals, numOfTimeIntervals, anotherSigma, flag, T0, q1);
-    getQuasiHeatEquationSolution(numOfEq, rho, c, alpha, beta, gamma, L, timeEnd, numOfXIntervalsQuasi, numOfTIntervalsQuasi, flag, T0, q1);
-
-    //flag = LQ_RQ;
-    //getHeatEquationSolution(numOfEq, rho, c, K, L, timeEnd, numOfXIntervals, numOfTimeIntervals, anotherSigma, flag, T0, q1, q2);
-    //getQuasiHeatEquationSolution(numOfEq, rho, c, alpha, beta, gamma, L, timeEnd, numOfXIntervalsQuasi, numOfTIntervalsQuasi, flag, T0, q1, q2);
+    //getHeatEquationSolution(numOfEq, rho, c, K, L, timeEnd, numOfXIntervals, numOfTimeIntervals, anotherSigma, flag, T0, q1, T2);
+    getQuasiHeatEquationSolution(numOfEq, rho, c, alpha, beta, gamma, L, timeEnd, numOfXIntervalsQuasi, numOfTIntervalsQuasi, flag, T0, q1, T2);
 
 
     // Второе уравнение // 9ый вариант
@@ -129,7 +119,7 @@ void temp_main(){
     K = K2;
     T0 = T02;
     q1 = q1_2;
-    q2 = q2_2;
+    T2 = T2_2;
     timeEnd = 5.0;
     numOfXIntervals = 100;
     numOfTimeIntervals = 1000;
@@ -138,22 +128,11 @@ void temp_main(){
     gamma = 3.0;
     numOfXIntervalsQuasi = 5;
     numOfTIntervalsQuasi = 50000;
-    
-    //flag = LT_RT;
-    //getHeatEquationSolution(numOfEq, rho, c, K, L, timeEnd, numOfXIntervals, numOfTimeIntervals, anotherSigma, flag, T0);
-    //getQuasiHeatEquationSolution(numOfEq, rho, c, alpha, beta, gamma, L, timeEnd, numOfXIntervalsQuasi, numOfTIntervalsQuasi, flag, T0);
-
-    //flag = LT_RQ;
-    //getHeatEquationSolution(numOfEq, rho, c, K, L, timeEnd, numOfXIntervals, numOfTimeIntervals, anotherSigma, flag, T0, q2);
-    //getQuasiHeatEquationSolution(numOfEq, rho, c, alpha, beta, gamma, L, timeEnd, numOfXIntervalsQuasi, numOfTIntervalsQuasi, flag, T0, q2);
 
     flag = LQ_RT;
-    getHeatEquationSolution(numOfEq, rho, c, K, L, timeEnd, numOfXIntervals, numOfTimeIntervals, anotherSigma, flag, T0, q1);
-    getQuasiHeatEquationSolution(numOfEq, rho, c, alpha, beta, gamma, L, timeEnd, numOfXIntervalsQuasi, numOfTimeIntervals, flag, T0, q1);
-    
-    //flag = LQ_RQ;
-    //getHeatEquationSolution(numOfEq, rho, c, K, L, timeEnd, numOfXIntervals, numOfTimeIntervals, anotherSigma, flag, T0, q1, q2);
-    //getQuasiHeatEquationSolution(numOfEq, rho, c, alpha, beta, gamma, L, timeEnd, numOfXIntervalsQuasi, numOfTIntervalsQuasi, flag, T0, q1, q2);
+    //getHeatEquationSolution(numOfEq, rho, c, K, L, timeEnd, numOfXIntervals, numOfTimeIntervals, anotherSigma, flag, T0, q1, T2);
+    getQuasiHeatEquationSolution(numOfEq, rho, c, alpha, beta, gamma, L, timeEnd, numOfXIntervalsQuasi, numOfTIntervalsQuasi, flag, T0, q1, T2);
+
 
     // Проверка изолированных концов
     numOfEq = 3;
@@ -168,8 +147,28 @@ void temp_main(){
     timeEnd = 10.0;
     numOfXIntervals = 100;
     numOfTimeIntervals = 1000;
+
     flag = LQ_RQ;
-    getHeatEquationSolution(numOfEq, rho, c, K, L, timeEnd, numOfXIntervals, numOfTimeIntervals, anotherSigma, flag, T0, q1, q2);
+    //getHeatEquationSolution(numOfEq, rho, c, K, L, timeEnd, numOfXIntervals, numOfTimeIntervals, anotherSigma, flag, T0, q1, q2);
+
+
+    // Проверка квазилинейного уравнения из учебника
+    numOfEq = 4;
+    rho = 1.0;
+    c = 1.0;
+    L = 10.0;
+    T0 = T04;
+    T1 = T1_4;
+    T2 = T2_4;
+    timeEnd = 2.0;
+    alpha = 0.0;
+    beta = 0.5;
+    gamma = 2.0;
+    numOfXIntervalsQuasi = 50;
+    numOfTIntervalsQuasi = 10000;
+
+    flag = LT_RT;
+    getQuasiHeatEquationSolution(numOfEq, rho, c, alpha, beta, gamma, L, timeEnd, numOfXIntervalsQuasi, numOfTIntervalsQuasi, flag, T0, T1, T2);
 
 }
 
