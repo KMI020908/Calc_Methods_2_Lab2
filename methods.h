@@ -376,4 +376,12 @@ template<typename Type>
 FILE_FLAG solveHeatQuasilinearEquation(const std::string &solutionFile, Type rho, Type c, Type alpha, Type beta, Type gamma, Type L, Type timeEnd,
 std::size_t numOfXIntervals, std::size_t numOfTimeIntervals, CONDS_FLAG flag, Type(*T0)(Type x), Type(*bound1)(Type t), Type(*bound2)(Type t), std::size_t numOfIters = 4);
 
+template<typename Type>
+FILE_FLAG getSpeedEstimateHeatEq(const std::string &speedFile, Type rho, Type c, Type(*K)(Type x), Type L, Type timeEnd,
+std::size_t numOfXIntervals, std::size_t numOfTimeIntervals, Type sigma, CONDS_FLAG flag, Type(*T0)(Type x), Type(*bound1)(Type t), Type(*bound2)(Type t));
+
+template<typename Type>
+FILE_FLAG getSpeedEstimateQuasilinearHeatEq(const std::string &solutionFile, Type rho, Type c, Type alpha, Type beta, Type gamma, Type L, Type timeEnd,
+std::size_t numOfXIntervals, std::size_t numOfTimeIntervals, CONDS_FLAG flag, Type(*T0)(Type x), Type(*bound1)(Type t), Type(*bound2)(Type t), std::size_t numOfIters = 4);
+
 #endif

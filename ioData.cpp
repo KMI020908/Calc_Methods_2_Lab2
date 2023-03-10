@@ -656,7 +656,7 @@ FILE_FLAG writeIters(std::size_t exactIterations, const std::string& OUT_FILE_PA
 }
 
 template<typename Type>
-std::string getFileNameHeatEq(std::size_t numOfEq, CONDS_FLAG flag, Type sigma, const std::string &name){
+std::string getFileNameHeatEq(std::size_t numOfEq, CONDS_FLAG flag, Type sigma, const std::string &name, const std::string &folder){
     std::string condsFolder;
     switch (flag){
         case LT_RT:
@@ -693,10 +693,10 @@ std::string getFileNameHeatEq(std::size_t numOfEq, CONDS_FLAG flag, Type sigma, 
             }
         }
     }
-    return "D:\\Calc_Methods_2\\Lab2\\LinearHeatEq\\" + condsFolder + sigmaFolder + name + std::to_string(numOfEq) + ".txt";
+    return "D:\\Calc_Methods_2\\Lab2\\" + folder + "\\" + condsFolder + sigmaFolder + name + std::to_string(numOfEq) + ".txt";
 }
 
-std::string getFileNameQuasiHeatEq(std::size_t numOfEq, CONDS_FLAG flag, const std::string &name){
+std::string getFileNameQuasiHeatEq(std::size_t numOfEq, CONDS_FLAG flag, const std::string &name, const std::string &folder){
     std::string condsFolder;
     switch (flag){
         case LT_RT:
@@ -716,5 +716,5 @@ std::string getFileNameQuasiHeatEq(std::size_t numOfEq, CONDS_FLAG flag, const s
             condsFolder = "FirstConds\\";
             break;
     }
-    return "D:\\Calc_Methods_2\\Lab2\\QuasilinearHeatEq\\" + condsFolder + name + std::to_string(numOfEq) + ".txt";
+    return "D:\\Calc_Methods_2\\Lab2\\" + folder + "\\" + condsFolder + name + std::to_string(numOfEq) + ".txt";
 }

@@ -94,7 +94,7 @@ Type q2_3(Type t){
 
 // Функция для проверки квазилинейного уравнения из учебника
 template<typename Type>
-Type T04(Type t){
+Type T04(Type x){
     return 0.0;
 }
 template<typename Type>
@@ -108,6 +108,24 @@ Type T1_4(Type t){
 template<typename Type>
 Type T2_4(Type t){
     return 0.0;
+}
+
+// Тест для проверки паорядка точности
+template<typename Type>
+Type T05(Type x){
+    return (x - 0.5) * (x - 0.5) + 1.0;
+}
+template<typename Type>
+Type K5(Type x){
+    return 1.0;
+}
+template<typename Type>
+Type q1_5(Type t){
+    return t + 1.0;
+}
+template<typename Type>
+Type q2_5(Type t){
+    return t + 1.0;
 }
 
 #endif

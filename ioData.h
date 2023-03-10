@@ -99,8 +99,8 @@ FILE_FLAG writeSysResNewthon(const std::vector<Type> &sol, Type x0, Type y0, Typ
 FILE_FLAG writeIters(std::size_t exactIterations, const std::string& OUT_FILE_PATH);
 
 template<typename Type>
-std::string getFileNameHeatEq(std::size_t numOfEq, CONDS_FLAG flag, Type sigma, const std::string &name = "solution");
+std::string getFileNameHeatEq(std::size_t numOfEq, CONDS_FLAG flag, Type sigma, const std::string &name, const std::string &folder = "LinearHeatEq");
 
-std::string getFileNameQuasiHeatEq(std::size_t numOfEq, CONDS_FLAG flag, const std::string &name = "solution");
+std::string getFileNameQuasiHeatEq(std::size_t numOfEq, CONDS_FLAG flag, const std::string &name, const std::string &folder = "QuasilinearHeatEq");
 
 #endif
