@@ -110,7 +110,7 @@ Type T2_4(Type t){
     return 0.0;
 }
 
-// Тест для проверки паорядка точности
+// Тест для проверки порядка точности
 template<typename Type>
 Type T05(Type x){
     return (x - 0.5) * (x - 0.5) + 1.0;
@@ -126,6 +126,39 @@ Type q1_5(Type t){
 template<typename Type>
 Type q2_5(Type t){
     return t + 1.0;
+}
+
+// Тест для проверки порядка точности с использованием аналитического решения
+template<typename Type>
+Type T06(Type x){
+    Type alpha = 3.0;
+    Type beta = 8.0;
+    return std::cos(beta * x) + std::sin(beta * x);
+}
+template<typename Type>
+Type K6(Type x){
+    Type alpha = 3.0;
+    Type beta = 8.0;
+    return alpha / std::pow(beta, 2.0);
+}
+template<typename Type>
+Type q1_6(Type t){
+    Type alpha = 3.0;
+    Type beta = 8.0;
+    return -beta * std::exp(-alpha * t) * K6(0.0);
+}
+template<typename Type>
+Type q2_6(Type t){
+    Type alpha = 3.0;
+    Type beta = 8.0;
+    return std::exp(-alpha * t) * beta * (std::cos(beta) - std::sin(beta)) * K6(1.0);
+}
+
+template<typename Type>
+Type realSol6(Type t, Type x){
+    Type alpha = 3.0;
+    Type beta = 8.0;
+    return std::exp(-alpha * t) * (std::sin(beta * x) + std::cos(beta * x));
 }
 
 #endif

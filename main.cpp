@@ -97,6 +97,30 @@ std::size_t numOfXIntervals, std::size_t numOfTimeIntervals, Type anotherSigma, 
     getSpeedEstimateHeatEq(SOLUTION_FILE, rho, c, K, L, timeEnd, numOfXIntervals, numOfTimeIntervals, sigma, flag, T0, bound1, bound2);
 }
 
+// Оценка сходимости при разных sigma при известном аналитическом решении
+template<typename Type>
+void getAllRealSpeedEstimates(std::size_t numOfEq, Type (*realSol)(Type t, Type x), Type rho, Type c, Type(*K)(Type x), Type L, Type timeEnd,
+std::size_t numOfXIntervals, std::size_t numOfTimeIntervals, Type anotherSigma, CONDS_FLAG flag, Type(*T0)(Type x), Type(*bound1)(Type t), Type(*bound2)(Type t)){ 
+    std::string SOLUTION_FILE;
+    Type sigma;
+
+    sigma = 0.0;
+    SOLUTION_FILE = getFileNameHeatEq(numOfEq, flag, sigma, "speed", "SpeedEstLinear");
+    getRealSpeedEstimateHeatEq(SOLUTION_FILE, realSol, rho, c, K, L, timeEnd, numOfXIntervals, numOfTimeIntervals, sigma, flag, T0, bound1, bound2);
+
+    sigma = 1.0;
+    SOLUTION_FILE = getFileNameHeatEq(numOfEq, flag, sigma, "speed", "SpeedEstLinear");
+    getRealSpeedEstimateHeatEq(SOLUTION_FILE, realSol, rho, c, K, L, timeEnd, numOfXIntervals, numOfTimeIntervals, sigma, flag, T0, bound1, bound2);
+
+    sigma = 0.50;
+    SOLUTION_FILE = getFileNameHeatEq(numOfEq, flag, sigma, "speed", "SpeedEstLinear");
+    getRealSpeedEstimateHeatEq(SOLUTION_FILE, realSol, rho, c, K, L, timeEnd, numOfXIntervals, numOfTimeIntervals, sigma, flag, T0, bound1, bound2);
+
+    sigma = anotherSigma;
+    SOLUTION_FILE = getFileNameHeatEq(numOfEq, flag, sigma, "speed", "SpeedEstLinear");
+    getRealSpeedEstimateHeatEq(SOLUTION_FILE, realSol, rho, c, K, L, timeEnd, numOfXIntervals, numOfTimeIntervals, sigma, flag, T0, bound1, bound2);
+}
+
 // Оценка сходимости квазилинейного уравнения
 template<typename Type>
 void getAllSpeedEstimatesQuasi(std::size_t numOfEq, Type rho, Type c, Type alpha, Type beta, Type gamma, Type L, Type timeEnd,
@@ -136,8 +160,8 @@ void temp_main(){
     q1 = q1_1;
     T2 = T2_1;
 
-    numOfXIntervals = 100;
-    numOfTimeIntervals = 1000;
+    numOfXIntervals = 50;
+    numOfTimeIntervals = 50000;
     //getHeatEquationSolution(numOfEq, rho, c, K, L, timeEnd, numOfXIntervals, numOfTimeIntervals, anotherSigma, flag, T0, q1, T2);
     speedNX = 10;
     speedNT = 50;
@@ -166,8 +190,8 @@ void temp_main(){
     q1 = q1_2;
     T2 = T2_2;
 
-    numOfXIntervals = 100;
-    numOfTimeIntervals = 1000;
+    numOfXIntervals = 50;
+    numOfTimeIntervals = 50000;
     //getHeatEquationSolution(numOfEq, rho, c, K, L, timeEnd, numOfXIntervals, numOfTimeIntervals, anotherSigma, flag, T0, q1, T2);
     speedNX = 10;
     speedNT = 50;
@@ -176,7 +200,7 @@ void temp_main(){
     alpha = 0.1;
     beta = 1.0;
     gamma = 3.0;
-    numOfXIntervalsQuasi = 5;
+    numOfXIntervalsQuasi = 10;
     numOfTIntervalsQuasi = 50000;
     //getQuasiHeatEquationSolution(numOfEq, rho, c, alpha, beta, gamma, L, timeEnd, numOfXIntervalsQuasi, numOfTIntervalsQuasi, flag, T0, q1, T2);
 
@@ -227,8 +251,8 @@ void temp_main(){
 
     // Оценка сходимости
     numOfEq = 5;
-    rho = 1.0;
-    c = 1.0;
+    rho = 2.0;
+    c = 2.0;
     K = K5;
 
     L = 1.0;
@@ -240,12 +264,34 @@ void temp_main(){
     q2 = q2_5;
 
     numOfXIntervals = 10;
-    numOfTimeIntervals = 10;
+    numOfTimeIntervals = 100;
     //getHeatEquationSolution(numOfEq, rho, c, K, L, timeEnd, numOfXIntervals, numOfTimeIntervals, anotherSigma, flag, T0, q1, q2);
 
     speedNX = 10;
-    speedNT = 10;
+    speedNT = 100;
     //getAllSpeedEstimates(numOfEq, rho, c, K, L, timeEnd, speedNX, speedNT, anotherSigma, flag, T0, q1, q2);
+
+    // Оценка сходимости с аналитическим решением
+    numOfEq = 6;
+    rho = 1.0;
+    c = 1.0;
+    K = K6;
+
+    L = 1.0;
+    timeEnd = 2.0;
+
+    flag = LQ_RQ;
+    T0 = T06;
+    q1 = q1_6;
+    q2 = q2_6;
+
+    numOfXIntervals = 10;
+    numOfTimeIntervals = 20;
+    getHeatEquationSolution(numOfEq, rho, c, K, L, timeEnd, numOfXIntervals, numOfTimeIntervals, anotherSigma, flag, T0, q1, q2);
+
+    speedNX = 10;
+    speedNT = 100;
+    getAllRealSpeedEstimates(numOfEq, realSol6, rho, c, K, L, timeEnd, speedNX, speedNT, anotherSigma, flag, T0, q1, q2);
 
 }
 
