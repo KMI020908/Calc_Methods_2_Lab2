@@ -161,4 +161,82 @@ Type realSol6(Type t, Type x){
     return std::exp(-alpha * t) * (std::sin(beta * x) + std::cos(beta * x));
 }
 
+// Функции для обезразмерования
+template<typename Type>
+Type K7(Type x){
+    return 4.0;
+}
+template<typename Type>
+Type T07(Type x){
+    return 0.0; 
+}
+
+template<typename Type>
+Type T1_7(Type t){
+    return 5.0;
+}
+
+template<typename Type>
+Type T2_7(Type t){
+    return 0.0;
+}
+
+// Функции для немонотонного
+template<typename Type>
+Type K8(Type x){
+    Type x1 = 0.0;
+    Type x2 = 1.0;
+    Type k1 = 0.5;
+    Type k2 = 1.5;
+    if (x  <= x1){
+        return k1;
+    }
+    if (x > x1 && x < x2){
+        return k1 * (x - x2) / (x1 - x2) + k2 * (x - x1) / (x2 - x1);
+    }
+    return k2;
+}
+
+template<typename Type>
+Type T08(Type x){
+    return 0.04 + x * (1.0 - x);
+}
+
+template<typename Type>
+Type q1_8(Type t){
+    return 0.04;
+}
+
+template<typename Type>
+Type q2_8(Type t){
+    return 0.04;
+}
+
+// Функции для обезразмерования на шару
+template<typename Type>
+Type K9(Type x){
+    return 1e-4;
+}
+
+template<typename Type>
+Type T1_9(Type t){
+    return 1.0;
+}
+
+template<typename Type>
+Type T09(Type x){
+    //return T1_9(0.0) * std::sqrt(100.0 - std::pow(x, 2.0)) / 10.0; 
+    return 0.0;
+}
+
+template<typename Type>
+Type T2_9(Type t){
+    return 0.0;
+}
+
+template<typename Type>
+Type D(Type ){
+    return 1e-8;
+}
+
 #endif

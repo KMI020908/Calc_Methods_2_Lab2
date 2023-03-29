@@ -17,7 +17,7 @@ void getFileNames(std::size_t numOfEq, CONDS_FLAG flag, Type sigma, std::string 
 // Решенние уравнений при разных sigma
 template<typename Type>
 void getHeatEquationSolution(std::size_t numOfEq, Type rho, Type c, Type(*K)(Type x), Type L, Type timeEnd,
-std::size_t numOfXIntervals, std::size_t numOfTimeIntervals, Type anotherSigma, CONDS_FLAG flag, Type(*T0)(Type x), Type(*bound1)(Type t), Type(*bound2)(Type t)){ 
+std::size_t numOfXIntervals, std::size_t numOfTimeIntervals, Type anotherSigma, CONDS_FLAG flag, Type(*T0)(Type x), Type(*bound1)(Type t), Type(*bound2)(Type t), bool isNonDimensial = false){ 
     std::vector<std::size_t> numOfIntervalsVec = {numOfXIntervals, numOfTimeIntervals};
     std::string SOLUTION_FILE;
     std::string DATA_FILE;
@@ -287,12 +287,65 @@ void temp_main(){
 
     numOfXIntervals = 10;
     numOfTimeIntervals = 20;
-    getHeatEquationSolution(numOfEq, rho, c, K, L, timeEnd, numOfXIntervals, numOfTimeIntervals, anotherSigma, flag, T0, q1, q2);
+    //getHeatEquationSolution(numOfEq, rho, c, K, L, timeEnd, numOfXIntervals, numOfTimeIntervals, anotherSigma, flag, T0, q1, q2);
 
     speedNX = 10;
     speedNT = 100;
-    getAllRealSpeedEstimates(numOfEq, realSol6, rho, c, K, L, timeEnd, speedNX, speedNT, anotherSigma, flag, T0, q1, q2);
+    //getAllRealSpeedEstimates(numOfEq, realSol6, rho, c, K, L, timeEnd, speedNX, speedNT, anotherSigma, flag, T0, q1, q2);
 
+    // Проверка корректности обезразмеривания
+    numOfEq = 7;
+    rho = 1.0;
+    c = 1.0;
+    K = K7;
+
+    L = 10.0;
+    timeEnd = 10.0;
+
+    flag = LT_RT;
+    T0 = T07;
+    T1 = T1_7;
+    T2 = T2_7;
+
+    numOfXIntervals = 100;
+    numOfTimeIntervals = 1000;
+    //getHeatEquationSolution(numOfEq, rho, c, K, L, timeEnd, numOfXIntervals, numOfTimeIntervals, 0.75, flag, T0, T1, T2);
+
+    // Пример немонотонной и устойчивой схемы в L2
+    numOfEq = 8;
+    rho = 0.5;
+    c = 2.0;
+    K = K8;
+
+    L = 1.0;
+    timeEnd = 0.24;
+
+    flag = LT_RT;
+    T0 = T08;
+    q1 = q1_8;
+    q2 = q2_8;
+
+    numOfXIntervals = 100;
+    numOfTimeIntervals = 6;
+    getHeatEquationSolution(numOfEq, rho, c, K, L, timeEnd, numOfXIntervals, numOfTimeIntervals, 0.2, flag, T0, q1, q2);
+
+    // Пример на шару
+    numOfEq = 9;
+    rho = 1.0;
+    c = 1.0;
+    K = K9;
+
+    L = 1.0;
+    timeEnd = 6.0;
+
+    flag = LT_RT;
+    T0 = T09;
+    T1 = T1_9;
+    T2 = T2_9;
+
+    numOfXIntervals = 100;
+    numOfTimeIntervals = 1000;
+    //solveHeatEquationNonDim("nonDim3.txt", "nonDimParams3.txt",  rho, c, K, L, timeEnd, numOfXIntervals, numOfTimeIntervals, 1.0, T0, T1, T2, true, D);
 }
 
 int main(){
